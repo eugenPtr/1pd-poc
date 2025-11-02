@@ -282,6 +282,36 @@ function main() {
   console.log(
     `📝 Updated TypeScript contract definition file on ${NEXTJS_TARGET_DIR}deployedContracts.ts`
   );
+
+  // Additionally, export known ABIs for dynamic contracts that might be deployed at runtime
+  const KNOWN_CONTRACTS = [
+    "LBP",
+    "PositionToken",
+    "LinearBondingCurve",
+    "RoundOrchestrator",
+  ];
+
+  const knownAbis = KNOWN_CONTRACTS.reduce((acc, name) => {
+    const artifact = getArtifactOfContract(name);
+    if (artifact?.abi) {
+      acc[name] = artifact.abi;
+    }
+    return acc;
+  }, {});
+
+  const abisTemplate = () => `
+    ${generatedContractComment}
+    export const KNOWN_ABIS = ${JSON.stringify(knownAbis, null, 2)} as const;
+    export type KnownAbiName = keyof typeof KNOWN_ABIS;
+  `;
+
+  writeFileSync(
+    `${NEXTJS_TARGET_DIR}knownAbis.ts`,
+    format(abisTemplate(), {
+      parser: "typescript",
+    })
+  );
+  console.log(`📝 Wrote the ABIs of contracts to be deployed during rounds to ${NEXTJS_TARGET_DIR}knownAbis.ts`);
 }
 
 try {
