@@ -51,8 +51,12 @@ contracts.LinearBondingCurve = {
 
 const blocks = {
   priceSampler: {
-    network: targetNetwork.name as string,
-    interval: Number.isFinite(priceSamplerInterval) && priceSamplerInterval > 0 ? priceSamplerInterval : 1,
+    network: {
+      [targetNetwork.name]: {
+        interval: Number.isFinite(priceSamplerInterval) && priceSamplerInterval > 0 ? priceSamplerInterval : 1,
+        startBlock: deployedContracts[targetNetwork.id].RoundOrchestrator.deployedOnBlock || 0,
+      },
+    },
   },
 };
 

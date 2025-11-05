@@ -71,7 +71,7 @@ ponder.on("priceSampler:block", async ({ event, context }) => {
     .limit(1);
 
   if (latestRound.length === 0) {
-    console.warn("[PriceIndexer] No latest round found");
+    console.log("[PriceIndexer] No round started yet, skipping price indexing");
     return;
   }
 
