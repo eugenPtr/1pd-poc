@@ -193,6 +193,7 @@ export function PositionTradeModal({ mode, position, isOpen, onClose, onSuccess 
     !hasValidAmount ||
     latestPrice === null ||
     latestPriceWei === null ||
+    !poolState ||
     (mode === "sell" && !address) ||
     isPriceLoading ||
     (mode === "sell" && isAllowanceFetching);
