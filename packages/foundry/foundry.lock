@@ -11,6 +11,12 @@
       "rev": "fcbae5394ae8ad52d8e580a3477db99814b9d565"
     }
   },
+  "lib/prb-math": {
+    "tag": {
+      "name": "v4.0.2",
+      "rev": "9dc06519f3b9f1659fec7d396da634fe690f660c"
+    }
+  },
   "lib/solidity-bytes-utils": {
     "tag": {
       "name": "v0.8.4",

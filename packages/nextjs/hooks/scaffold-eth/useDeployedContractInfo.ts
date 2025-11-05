@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSessionStorage } from "usehooks-ts";
 import { useIsMounted } from "usehooks-ts";
 import { usePublicClient } from "wagmi";
 import { useSelectedNetwork } from "~~/hooks/scaffold-eth";
@@ -47,6 +48,22 @@ export function useDeployedContractInfo<TContractName extends ContractName>(
   const { contractName, chainId } = finalConfig;
   const selectedNetwork = useSelectedNetwork(chainId);
   const deployedContract = contracts?.[selectedNetwork.id]?.[contractName as ContractName] as Contract<TContractName>;
+
+  // Also check dynamic contracts discovered at runtime (from session storage)
+  const [dynamicRaw] = useSessionStorage<Record<string, { name: string; address: `0x${string}`; abi: readonly any[] }>>(
+    "scaffoldEth2.dynamicContracts",
+    {},
+    { initializeWithValue: false },
+  );
+  const dynamicContract = useMemo(() => {
+    if (!dynamicRaw) return undefined;
+    const byName = Object.values(dynamicRaw).find(entry => entry.name === (contractName as unknown as string));
+    if (!byName) return undefined;
+    return {
+      address: byName.address as any,
+      abi: byName.abi as any,
+    } as Contract<TContractName>;
+  }, [dynamicRaw, contractName]);
   const [status, setStatus] = useState<ContractCodeStatus>(ContractCodeStatus.LOADING);
   const publicClient = usePublicClient({ chainId: selectedNetwork.id });
 
@@ -55,13 +72,14 @@ export function useDeployedContractInfo<TContractName extends ContractName>(
       try {
         if (!isMounted() || !publicClient) return;
 
-        if (!deployedContract) {
+        const candidate = deployedContract || dynamicContract;
+        if (!candidate) {
           setStatus(ContractCodeStatus.NOT_FOUND);
           return;
         }
 
         const code = await publicClient.getBytecode({
-          address: deployedContract.address,
+          address: candidate.address,
         });
 
         // If contract code is `0x` => no contract deployed on that address
@@ -77,10 +95,10 @@ export function useDeployedContractInfo<TContractName extends ContractName>(
     };
 
     checkContractDeployment();
-  }, [isMounted, contractName, deployedContract, publicClient]);
+  }, [isMounted, contractName, deployedContract, dynamicContract, publicClient]);
 
   return {
-    data: status === ContractCodeStatus.DEPLOYED ? deployedContract : undefined,
+    data: status === ContractCodeStatus.DEPLOYED ? deployedContract || dynamicContract : undefined,
     isLoading: status === ContractCodeStatus.LOADING,
   };
 }

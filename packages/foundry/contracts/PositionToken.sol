@@ -7,14 +7,17 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 contract PositionToken is ERC20, Ownable {
     address[] public holders;
     mapping(address => bool) public isHolder;
+    string public imageURI;
 
     constructor(
         string memory name,
         string memory symbol,
         uint256 initialSupply,
-        address initialOwner
+        address initialOwner,
+        string memory _imageURI
     ) ERC20(name, symbol) Ownable(initialOwner) {
         _mint(initialOwner, initialSupply);
+        imageURI = _imageURI;
     }
 
     function _update(address from, address to, uint256 value) internal override {

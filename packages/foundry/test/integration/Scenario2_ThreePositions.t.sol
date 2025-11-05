@@ -59,19 +59,19 @@ contract Scenario2ThreePositionsTest is Test {
         // Create Position A
         vm.prank(creatorA);
         address posA = orchestrator.createPosition{value: TEN_ETH}(
-            "TokenA", "TA", TEN_THOUSAND * 1e18
+            "TokenA", "TA", TEN_THOUSAND * 1e18, "ipfs://test"
         );
 
         // Create Position B
         vm.prank(creatorB);
         address posB = orchestrator.createPosition{value: TEN_ETH}(
-            "TokenB", "TB", TEN_THOUSAND * 1e18
+            "TokenB", "TB", TEN_THOUSAND * 1e18, "ipfs://test"
         );
 
         // Create Position C
         vm.prank(creatorC);
         address posC = orchestrator.createPosition{value: TEN_ETH}(
-            "TokenC", "TC", TEN_THOUSAND * 1e18
+            "TokenC", "TC", TEN_THOUSAND * 1e18, "ipfs://test"
         );
 
     assertTrue(posA != address(0));
@@ -89,7 +89,7 @@ contract Scenario2ThreePositionsTest is Test {
     function test_scenario2_step2_shouldAllowHalfOfPositionATradersToExit() public {
         // Create positions
         vm.prank(creatorA);
-    orchestrator.createPosition{value: TEN_ETH}("TokenA", "TA", TEN_THOUSAND * 1e18);
+    orchestrator.createPosition{value: TEN_ETH}("TokenA", "TA", TEN_THOUSAND * 1e18, "ipfs://test");
 
     address lbpAddrA = orchestrator.getRoundPositions()[0];
         LBP lbpA = LBP(payable(lbpAddrA));
@@ -122,7 +122,7 @@ contract Scenario2ThreePositionsTest is Test {
     function test_scenario2_step3_shouldAllowAllPositionBTradersToExit() public {
         // Create positions
         vm.prank(creatorB);
-    orchestrator.createPosition{value: TEN_ETH}("TokenB", "TB", TEN_THOUSAND * 1e18);
+    orchestrator.createPosition{value: TEN_ETH}("TokenB", "TB", TEN_THOUSAND * 1e18, "ipfs://test");
 
     address lbpAddrB = orchestrator.getRoundPositions()[0];
         LBP lbpB = LBP(payable(lbpAddrB));
@@ -148,7 +148,7 @@ contract Scenario2ThreePositionsTest is Test {
     function test_scenario2_step4_shouldHaveAllPositionCTradersHoldUntilEnd() public {
         // Create positions
         vm.prank(creatorC);
-    orchestrator.createPosition{value: TEN_ETH}("TokenC", "TC", TEN_THOUSAND * 1e18);
+    orchestrator.createPosition{value: TEN_ETH}("TokenC", "TC", TEN_THOUSAND * 1e18, "ipfs://test");
 
     address lbpAddrC = orchestrator.getRoundPositions()[0];
         LBP lbpC = LBP(payable(lbpAddrC));
@@ -171,13 +171,13 @@ contract Scenario2ThreePositionsTest is Test {
     function test_scenario2_step5_shouldDeclarePositionCAsWinner() public {
         // Create all 3 positions
         vm.prank(creatorA);
-    orchestrator.createPosition{value: TEN_ETH}("TokenA", "TA", TEN_THOUSAND * 1e18);
+    orchestrator.createPosition{value: TEN_ETH}("TokenA", "TA", TEN_THOUSAND * 1e18, "ipfs://test");
 
     vm.prank(creatorB);
-    orchestrator.createPosition{value: TEN_ETH}("TokenB", "TB", TEN_THOUSAND * 1e18);
+    orchestrator.createPosition{value: TEN_ETH}("TokenB", "TB", TEN_THOUSAND * 1e18, "ipfs://test");
 
     vm.prank(creatorC);
-    orchestrator.createPosition{value: TEN_ETH}("TokenC", "TC", TEN_THOUSAND * 1e18);
+    orchestrator.createPosition{value: TEN_ETH}("TokenC", "TC", TEN_THOUSAND * 1e18, "ipfs://test");
 
         // Position A: Half exit
     address lbpAddrA = orchestrator.getRoundPositions()[0];
@@ -227,11 +227,11 @@ contract Scenario2ThreePositionsTest is Test {
     function test_scenario2_step6_shouldLiquidatePositionsAandB() public {
         // Setup: Create 3 positions with trading
         vm.prank(creatorA);
-    orchestrator.createPosition{value: TEN_ETH}("TokenA", "TA", TEN_THOUSAND * 1e18);
+    orchestrator.createPosition{value: TEN_ETH}("TokenA", "TA", TEN_THOUSAND * 1e18, "ipfs://test");
     vm.prank(creatorB);
-    orchestrator.createPosition{value: TEN_ETH}("TokenB", "TB", TEN_THOUSAND * 1e18);
+    orchestrator.createPosition{value: TEN_ETH}("TokenB", "TB", TEN_THOUSAND * 1e18, "ipfs://test");
     vm.prank(creatorC);
-    orchestrator.createPosition{value: TEN_ETH}("TokenC", "TC", TEN_THOUSAND * 1e18);
+    orchestrator.createPosition{value: TEN_ETH}("TokenC", "TC", TEN_THOUSAND * 1e18, "ipfs://test");
 
         // Trading setup (simplified - C holds most)
     address lbpAddrC = orchestrator.getRoundPositions()[2];
@@ -253,11 +253,11 @@ contract Scenario2ThreePositionsTest is Test {
     function test_scenario2_step7_shouldDistributeBCTFromAllThirtyETHToPositionCHolders() public {
         // Setup: Create 3 positions
         vm.prank(creatorA);
-    orchestrator.createPosition{value: TEN_ETH}("TokenA", "TA", TEN_THOUSAND * 1e18);
+    orchestrator.createPosition{value: TEN_ETH}("TokenA", "TA", TEN_THOUSAND * 1e18, "ipfs://test");
     vm.prank(creatorB);
-    orchestrator.createPosition{value: TEN_ETH}("TokenB", "TB", TEN_THOUSAND * 1e18);
+    orchestrator.createPosition{value: TEN_ETH}("TokenB", "TB", TEN_THOUSAND * 1e18, "ipfs://test");
     vm.prank(creatorC);
-    orchestrator.createPosition{value: TEN_ETH}("TokenC", "TC", TEN_THOUSAND * 1e18);
+    orchestrator.createPosition{value: TEN_ETH}("TokenC", "TC", TEN_THOUSAND * 1e18, "ipfs://test");
 
         // Position C wins
     address lbpAddrC = orchestrator.getRoundPositions()[2];
@@ -284,7 +284,7 @@ contract Scenario2ThreePositionsTest is Test {
     function test_scenario2_step8_shouldDistributeBCTProportionallyToPositionTokenHoldings() public {
         // Setup: Create winning position
     vm.prank(creatorC);
-    orchestrator.createPosition{value: TEN_ETH}("TokenC", "TC", TEN_THOUSAND * 1e18);
+    orchestrator.createPosition{value: TEN_ETH}("TokenC", "TC", TEN_THOUSAND * 1e18, "ipfs://test");
 
     address lbpAddrC = orchestrator.getRoundPositions()[0];
         LBP lbpC = LBP(payable(lbpAddrC));

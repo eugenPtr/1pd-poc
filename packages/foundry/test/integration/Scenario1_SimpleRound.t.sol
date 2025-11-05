@@ -44,7 +44,8 @@ contract Scenario1SimpleRoundTest is Test {
         address lbpAddress = orchestrator.createPosition{value: ONE_ETH}(
             "SimpleToken",
             "SIMPLE",
-            TEN_THOUSAND * 1e18
+            TEN_THOUSAND * 1e18,
+            "ipfs://test"
         );
 
         vm.stopPrank();
@@ -65,7 +66,8 @@ contract Scenario1SimpleRoundTest is Test {
         orchestrator.createPosition{value: ONE_ETH}(
             "SimpleToken",
             "SIMPLE",
-            TEN_THOUSAND * 1e18
+            TEN_THOUSAND * 1e18,
+            "ipfs://test"
         );
 
         // Step 2: Trader buys tokens
@@ -98,7 +100,8 @@ contract Scenario1SimpleRoundTest is Test {
         orchestrator.createPosition{value: ONE_ETH}(
             "SimpleToken",
             "SIMPLE",
-            TEN_THOUSAND * 1e18
+            TEN_THOUSAND * 1e18,
+            "ipfs://test"
         );
 
         // Step 2: Trader buys tokens
@@ -136,7 +139,8 @@ contract Scenario1SimpleRoundTest is Test {
         orchestrator.createPosition{value: ONE_ETH}(
             "SimpleToken",
             "SIMPLE",
-            TEN_THOUSAND * 1e18
+            TEN_THOUSAND * 1e18,
+            "ipfs://test"
         );
 
         // Step 2: Trader buys tokens
@@ -169,7 +173,8 @@ contract Scenario1SimpleRoundTest is Test {
         orchestrator.createPosition{value: ONE_ETH}(
             "SimpleToken",
             "SIMPLE",
-            TEN_THOUSAND * 1e18
+            TEN_THOUSAND * 1e18,
+            "ipfs://test"
         );
 
         // Step 2: Trader buys tokens

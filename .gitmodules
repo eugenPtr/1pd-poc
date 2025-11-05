@@ -7,3 +7,6 @@
 [submodule "packages/foundry/lib/solidity-bytes-utils"]
 	path = packages/foundry/lib/solidity-bytes-utils
 	url = https://github.com/gnsps/solidity-bytes-utils
+[submodule "packages/foundry/lib/prb-math"]
+	path = packages/foundry/lib/prb-math
+	url = https://github.com/PaulRBerg/prb-math

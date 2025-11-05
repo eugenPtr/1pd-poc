@@ -49,7 +49,8 @@ contract Scenario4MultipleRoundsTest is Test {
         orchestrator.createPosition{value: ONE_ETH}(
             "Token1",
             "T1",
-            TEN_THOUSAND * 1e18
+            TEN_THOUSAND * 1e18,
+            "ipfs://test"
         );
 
         // Trader buys tokens
@@ -81,7 +82,7 @@ contract Scenario4MultipleRoundsTest is Test {
     function test_scenario4_step2_shouldDeployNewBondingCurveForRound2() public {
         // Complete Round 1
         vm.prank(creator1);
-    orchestrator.createPosition{value: ONE_ETH}("Token1", "T1", TEN_THOUSAND * 1e18);
+    orchestrator.createPosition{value: ONE_ETH}("Token1", "T1", TEN_THOUSAND * 1e18, "ipfs://test");
 
     address lbpAddr1 = orchestrator.getRoundPositions()[0];
         vm.prank(trader1);
@@ -112,7 +113,7 @@ contract Scenario4MultipleRoundsTest is Test {
     function test_scenario4_step3_shouldCompleteRound2AndDistributeBCT2ToWinner() public {
         // Complete Round 1
         vm.prank(creator1);
-        orchestrator.createPosition{value: ONE_ETH}("Token1", "T1", TEN_THOUSAND * 1e18);
+        orchestrator.createPosition{value: ONE_ETH}("Token1", "T1", TEN_THOUSAND * 1e18, "ipfs://test");
 
         address lbpAddr1 = orchestrator.getRoundPositions()[0];
         vm.prank(trader1);
@@ -123,7 +124,7 @@ contract Scenario4MultipleRoundsTest is Test {
 
         // Create position in Round 2
     vm.prank(creator2);
-    orchestrator.createPosition{value: ONE_ETH}("Token2", "T2", TEN_THOUSAND * 1e18);
+    orchestrator.createPosition{value: ONE_ETH}("Token2", "T2", TEN_THOUSAND * 1e18, "ipfs://test");
 
         // Trader2 buys tokens in Round 2
     address lbpAddr2 = orchestrator.getRoundPositions()[0];
@@ -154,7 +155,7 @@ contract Scenario4MultipleRoundsTest is Test {
     function test_scenario4_step4_shouldKeepBCT1andBCT2SeparateWithNoContamination() public {
         // Complete Round 1
         vm.prank(creator1);
-    orchestrator.createPosition{value: ONE_ETH}("Token1", "T1", TEN_THOUSAND * 1e18);
+    orchestrator.createPosition{value: ONE_ETH}("Token1", "T1", TEN_THOUSAND * 1e18, "ipfs://test");
 
     address lbpAddr1 = orchestrator.getRoundPositions()[0];
         vm.prank(trader1);
@@ -171,7 +172,7 @@ contract Scenario4MultipleRoundsTest is Test {
     orchestrator.startRound(ONE_DAY);
 
     vm.prank(creator2);
-    orchestrator.createPosition{value: ONE_ETH}("Token2", "T2", TEN_THOUSAND * 1e18);
+    orchestrator.createPosition{value: ONE_ETH}("Token2", "T2", TEN_THOUSAND * 1e18, "ipfs://test");
 
     address lbpAddr2 = orchestrator.getRoundPositions()[0];
         vm.prank(trader2);

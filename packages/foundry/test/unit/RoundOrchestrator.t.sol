@@ -58,7 +58,8 @@ contract RoundOrchestratorTest is Test {
         address lbpAddress = orchestrator.createPosition{value: ONE_ETH}(
             "Test Token",
             "TEST",
-            TEN_THOUSAND * 1e18
+            TEN_THOUSAND * 1e18,
+            "ipfs://test"
         );
 
         vm.stopPrank();
@@ -79,7 +80,8 @@ contract RoundOrchestratorTest is Test {
         address lbpAddress = orchestrator.createPosition{value: ONE_ETH}(
             "Test Token",
             "TEST",
-            TEN_THOUSAND * 1e18
+            TEN_THOUSAND * 1e18,
+            "ipfs://test"
         );
 
         vm.stopPrank();
@@ -97,7 +99,8 @@ contract RoundOrchestratorTest is Test {
         address lbpAddress = orchestrator.createPosition{value: ONE_ETH}(
             "Test Token",
             "TEST",
-            TEN_THOUSAND * 1e18
+            TEN_THOUSAND * 1e18,
+            "ipfs://test"
         );
         vm.stopPrank();
 
@@ -144,7 +147,8 @@ contract RoundOrchestratorTest is Test {
         orchestrator.createPosition{value: ONE_ETH}(
             "Test Token",
             "TEST",
-            TEN_THOUSAND * 1e18
+            TEN_THOUSAND * 1e18,
+            "ipfs://test"
         );
 
         // Fast forward past first round
@@ -165,9 +169,9 @@ contract RoundOrchestratorTest is Test {
     function test_getRoundPositions_shouldReturnAllThreePositionIds() public {
         // Create 3 positions
         vm.startPrank(user1);
-        orchestrator.createPosition{value: ONE_ETH}("Token1", "T1", TEN_THOUSAND * 1e18);
-        orchestrator.createPosition{value: ONE_ETH}("Token2", "T2", TEN_THOUSAND * 1e18);
-        orchestrator.createPosition{value: ONE_ETH}("Token3", "T3", TEN_THOUSAND * 1e18);
+        orchestrator.createPosition{value: ONE_ETH}("Token1", "T1", TEN_THOUSAND * 1e18, "ipfs://test");
+        orchestrator.createPosition{value: ONE_ETH}("Token2", "T2", TEN_THOUSAND * 1e18, "ipfs://test");
+        orchestrator.createPosition{value: ONE_ETH}("Token3", "T3", TEN_THOUSAND * 1e18, "ipfs://test");
         vm.stopPrank();
 
         address[] memory lbps = orchestrator.getRoundPositions();
@@ -184,7 +188,8 @@ contract RoundOrchestratorTest is Test {
         address lbpAddress = orchestrator.createPosition{value: 10 ether}(
             "Test Token",
             "TEST",
-            TEN_THOUSAND * 1e18
+            TEN_THOUSAND * 1e18,
+            "ipfs://test"
         );
         LBP lbp = LBP(payable(lbpAddress));
 

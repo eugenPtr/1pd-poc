@@ -1,3 +1,4 @@
+import { defineChain } from "viem";
 import * as chains from "viem/chains";
 
 export type BaseConfig = {
@@ -13,9 +14,28 @@ export type ScaffoldConfig = BaseConfig;
 
 export const DEFAULT_ALCHEMY_API_KEY = "oKxs-03sij-U_N0iOlrSsZFr29-IqbuF";
 
+export const megaethTestnet = defineChain({
+  id: 6342,
+  name: "MegaETH Testnet",
+  network: "megaeth-testnet",
+  nativeCurrency: {
+    name: "MegaETH Testnet Ether",
+    symbol: "ETH",
+    decimals: 18,
+  },
+  rpcUrls: {
+    default: { http: ["https://carrot.megaeth.com/rpc"] },
+    public: { http: ["https://carrot.megaeth.com/rpc"] },
+  },
+  blockExplorers: {
+    default: { name: "MegaExplorer", url: "https://megaexplorer.xyz" },
+  },
+  testnet: true,
+});
+
 const scaffoldConfig = {
   // The networks on which your DApp is live
-  targetNetworks: [chains.foundry],
+  targetNetworks: [chains.foundry, megaethTestnet],
   // The interval at which your front-end polls the RPC servers for new data (it has no effect if you only target the local network (default is 4000))
   pollingInterval: 30000,
   // This is ours Alchemy's default API key.

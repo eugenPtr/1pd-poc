@@ -5,6 +5,7 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {PositionToken} from "./PositionToken.sol";
+import {UD60x18, ud, unwrap} from "@prb/math/UD60x18.sol";
 
 /**
  * @title LBP (Liquidity Bootstrap Pool)
@@ -105,6 +106,30 @@ contract LBP is ReentrancyGuard {
         if (positionTokenAmount == 0) return 0;
         (uint256 weightToken, uint256 weightEth) = getCurrentWeights();
         return _calculatePrice(ethAmount, positionTokenAmount, weightToken, weightEth);
+    }
+
+    /**
+     * @dev Get complete pool state for frontend calculations
+     * @return tokenReserve Current position token reserve
+     * @return ethReserve Current ETH reserve
+     * @return weightToken Current position token weight (basis points)
+     * @return weightEth Current ETH weight (basis points)
+     * @return priceWei Current price in wei (18 decimals)
+     */
+    function getPoolState()
+        external
+        view
+        returns (
+            uint256 tokenReserve,
+            uint256 ethReserve,
+            uint256 weightToken,
+            uint256 weightEth,
+            uint256 priceWei
+        )
+    {
+        (weightToken, weightEth) = getCurrentWeights();
+        priceWei = getCurrentPrice();
+        return (positionTokenAmount, ethAmount, weightToken, weightEth, priceWei);
     }
 
     /**
@@ -246,12 +271,23 @@ contract LBP is ReentrancyGuard {
     }
 
     function liquidatePool() external nonReentrant {
+        _liquidate(false);
+    }
+
+    function forceLiquidate() external nonReentrant {
+        require(msg.sender == ORCHESTRATOR, "Only orchestrator");
+        _liquidate(true);
+    }
+
+    function _liquidate(bool forced) internal {
         require(!liquidated, "Already liquidated");
         require(!settled, "Already settled");
         require(positionTokenAmount > 0 && ethAmount > 0, "Pool not initialized");
 
-        uint256 currentPrice = getCurrentPrice();
-        require(currentPrice <= liquidationPrice, "Price above liquidation threshold");
+        if (!forced) {
+            uint256 currentPrice = getCurrentPrice();
+            require(currentPrice <= liquidationPrice, "Price above liquidation threshold");
+        }
 
         liquidated = true;
 
@@ -299,6 +335,7 @@ contract LBP is ReentrancyGuard {
 
     /**
      * @dev Calculate price: (reserveETH / reserveToken) * (weightToken / weightETH)
+     * @return Price with 18 decimal precision (wei)
      */
     function _calculatePrice(
         uint256 _reserveETH,
@@ -306,7 +343,7 @@ contract LBP is ReentrancyGuard {
         uint256 weightToken,
         uint256 weightEth
     ) internal pure returns (uint256) {
-        return (_reserveETH * 1e18 / _reserveToken) * weightToken / weightEth;
+        return (_reserveETH * weightToken * 1e18) / (_reserveToken * weightEth);
     }
 
     /**
@@ -320,19 +357,27 @@ contract LBP is ReentrancyGuard {
         uint256 weightOut,
         uint256 amountIn
     ) internal pure returns (uint256) {
-        uint256 newReserveIn = reserveIn + amountIn;
-        uint256 ratio = (reserveIn * 1e18) / newReserveIn;
-
-        // Weight-adjusted ratio
-        uint256 weightRatio = (weightIn * 1e18) / weightOut;
-        uint256 adjustedRatio = (ratio * weightRatio) / 1e18;
-
-        // Protect against underflow if adjusted ratio exceeds 1e18
-        if (adjustedRatio >= 1e18) {
+        if (amountIn == 0 || reserveIn == 0 || reserveOut == 0 || weightIn == 0 || weightOut == 0) {
             return 0;
         }
 
-        uint256 amountOut = (reserveOut * (1e18 - adjustedRatio)) / 1e18;
+        uint256 newReserveIn = reserveIn + amountIn;
+        if (newReserveIn == 0) {
+            return 0;
+        }
+
+        uint256 ratioScaled = (reserveIn * 1e18) / newReserveIn;
+        uint256 weightRatioScaled = (weightIn * 1e18) / weightOut;
+
+        UD60x18 ratio = ud(ratioScaled);
+        UD60x18 exponent = ud(weightRatioScaled);
+
+        uint256 ratioPower = unwrap(ratio.pow(exponent));
+        if (ratioPower >= 1e18) {
+            return 0;
+        }
+
+        uint256 amountOut = (reserveOut * (1e18 - ratioPower)) / 1e18;
 
         return amountOut;
     }

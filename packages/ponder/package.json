@@ -5,7 +5,7 @@
   "scripts": {
     "codegen": "ponder codegen",
     "db": "ponder db",
-    "dev": "ponder dev",
+    "dev": "rm -rf .ponder && ponder dev",
     "lint": "eslint .",
     "serve": "ponder serve",
     "start": "ponder start",

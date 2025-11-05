@@ -24,7 +24,8 @@ contract PositionTokenTest is Test {
             "Position Token",
             "PT",
             TEN_THOUSAND * 1e18,
-            owner
+            owner,
+            "ipfs://test"
         );
     }
 

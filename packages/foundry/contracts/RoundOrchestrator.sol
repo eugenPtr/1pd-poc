@@ -48,14 +48,17 @@ contract RoundOrchestrator is Ownable, ReentrancyGuard {
     mapping(address => Position) public lbpAddressToPosition;
 
     // Events
-    event RoundStarted(uint256 indexed roundId, uint256 startTime, uint256 duration, address bondingPool);
+    event RoundStarted(uint256 indexed roundId, uint256 startTime, uint256 duration, address indexed bondingPool);
     event PositionCreated(
         uint256 indexed roundId,
         address indexed lbpAddress,
         address indexed creator,
         address tokenAddress,
         uint256 ethAmount,
-        uint256 tokenSupply
+        uint256 tokenSupply,
+        string name,
+        string symbol,
+        string imageURI
     );
     event PositionLiquidated(address indexed lbpAddress);
     event RoundSettled(uint256 indexed roundId, address indexed winnerLbp);
@@ -124,7 +127,8 @@ contract RoundOrchestrator is Ownable, ReentrancyGuard {
     function createPosition(
         string memory name,
         string memory symbol,
-        uint256 tokenAmount
+        uint256 tokenAmount,
+        string memory imageURI
     ) external payable nonReentrant returns (address) {
         require(msg.value >= MIN_POSITION_ETH && msg.value <= MAX_POSITION_ETH, "Invalid ETH amount");
         require(tokenAmount > 0, "Token amount must be positive");
@@ -141,6 +145,7 @@ contract RoundOrchestrator is Ownable, ReentrancyGuard {
             symbol,
             tokenAmount,
             address(this),
+            imageURI,
             salt
         );
 
@@ -178,7 +183,10 @@ contract RoundOrchestrator is Ownable, ReentrancyGuard {
             msg.sender,
             positionToken,
             msg.value,
-            tokenAmount
+            tokenAmount,
+            name,
+            symbol,
+            imageURI
         );
 
         return lbp;
@@ -255,7 +263,7 @@ contract RoundOrchestrator is Ownable, ReentrancyGuard {
                     round.bondingCurve.distributeToWinners(winners, shares);
                 }
             } else if (!lbp.isLiquidated()) {
-                lbp.liquidatePool();
+                lbp.forceLiquidate();
             }
         }
 

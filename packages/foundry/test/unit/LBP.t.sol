@@ -41,7 +41,8 @@ contract LBPTest is Test {
             "Position Token",
             "PT",
             TEN_THOUSAND * 1e18,
-            orchestrator
+            orchestrator,
+            "ipfs://test"
         );
 
         // Approve tokens for LBP constructor

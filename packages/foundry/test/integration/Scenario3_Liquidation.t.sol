@@ -45,7 +45,8 @@ contract Scenario3LiquidationTest is Test {
         address lbpAddrCreated = orchestrator.createPosition{value: TEN_ETH}(
             "LiquidToken",
             "LIQ",
-            TEN_THOUSAND * 1e18
+            TEN_THOUSAND * 1e18,
+            "ipfs://test"
         );
 
         assertTrue(lbpAddrCreated != address(0), "Should have LBP address");
@@ -66,7 +67,8 @@ contract Scenario3LiquidationTest is Test {
         orchestrator.createPosition{value: TEN_ETH}(
             "LiquidToken",
             "LIQ",
-            TEN_THOUSAND * 1e18
+            TEN_THOUSAND * 1e18,
+            "ipfs://test"
         );
 
         address lbpAddr = orchestrator.getRoundPositions()[0];
@@ -111,7 +113,8 @@ contract Scenario3LiquidationTest is Test {
         orchestrator.createPosition{value: TEN_ETH}(
             "LiquidToken",
             "LIQ",
-            TEN_THOUSAND * 1e18
+            TEN_THOUSAND * 1e18,
+            "ipfs://test"
         );
 
         address lbpAddr = orchestrator.getRoundPositions()[0];

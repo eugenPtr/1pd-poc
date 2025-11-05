@@ -4,6 +4,7 @@ import { Address } from "~~/components/scaffold-eth";
 import { useTargetNetwork } from "~~/hooks/scaffold-eth/useTargetNetwork";
 import { TransactionWithFunction } from "~~/utils/scaffold-eth";
 import { TransactionsTableProps } from "~~/utils/scaffold-eth/";
+import { formatTimestamp } from "~~/utils/utils";
 
 export const TransactionsTable = ({ blocks, transactionReceipts }: TransactionsTableProps) => {
   const { targetNetwork } = useTargetNetwork();
@@ -27,7 +28,7 @@ export const TransactionsTable = ({ blocks, transactionReceipts }: TransactionsT
             {blocks.map(block =>
               (block.transactions as TransactionWithFunction[]).map(tx => {
                 const receipt = transactionReceipts[tx.hash];
-                const timeMined = new Date(Number(block.timestamp) * 1000).toLocaleString();
+                const timeMined = formatTimestamp(block.timestamp?.toString());
                 const functionCalled = tx.input.substring(0, 10);
 
                 return (

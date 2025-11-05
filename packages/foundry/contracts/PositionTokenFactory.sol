@@ -19,11 +19,12 @@ contract PositionTokenFactory {
         string memory _symbol,
         uint256 _initialSupply,
         address _initialOwner,
+        string memory _imageURI,
         bytes32 salt
     ) external returns (address token) {
         // Deploy using CREATE2 with all constructor params
         token = address(
-            new PositionToken{salt: salt}(_name, _symbol, _initialSupply, _initialOwner)
+            new PositionToken{salt: salt}(_name, _symbol, _initialSupply, _initialOwner, _imageURI)
         );
 
         emit PositionTokenDeployed(token, _name, _symbol, salt);
@@ -38,11 +39,12 @@ contract PositionTokenFactory {
         string memory _symbol,
         uint256 _initialSupply,
         address _initialOwner,
+        string memory _imageURI,
         bytes32 salt
     ) external view returns (address) {
         bytes memory bytecode = abi.encodePacked(
             type(PositionToken).creationCode,
-            abi.encode(_name, _symbol, _initialSupply, _initialOwner)
+            abi.encode(_name, _symbol, _initialSupply, _initialOwner, _imageURI)
         );
 
         bytes32 hash = keccak256(
