@@ -29,7 +29,7 @@ scrollSepolia = "https://sepolia-rpc.scroll.io"
 scroll = "https://rpc.scroll.io"
 pgn = "https://rpc.publicgoods.network"
 pgnTestnet = "https://sepolia.publicgoods.network"
-megaethTestnet = "https://carrot.megaeth.com/rpc"
+megaethTestnet = "https://6342.rpc.thirdweb.com/${THIRDWEB_CLIENT_ID}"
 
 
 localhost = "http://127.0.0.1:8545"

@@ -7,7 +7,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   6342: {
     LBPFactory: {
-      address: "0x56500053b7dbb9ace4ce2add7fabb10aa321f052",
+      address: "0x6aaeadee73a81e0d55f46c7fba4b495b0d943867",
       abi: [
         {
           type: "function",
@@ -124,10 +124,10 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 21197622,
+      deployedOnBlock: 21282697,
     },
     PositionTokenFactory: {
-      address: "0x6b4901605d0c5af0c3c89869113d57f383707278",
+      address: "0x681cfffe8329f9dce346d1788bf96b48548d536c",
       abi: [
         {
           type: "function",
@@ -250,10 +250,10 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 21197622,
+      deployedOnBlock: 21282697,
     },
     RoundOrchestrator: {
-      address: "0x524a1c00c096838adc6603d641c5fd7fe7d8e0f2",
+      address: "0x5da244dedfd5a107a72ff2152db348793a68b883",
       abi: [
         {
           type: "constructor",
@@ -807,7 +807,7 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 21197626,
+      deployedOnBlock: 21282697,
     },
   },
   31337: {
