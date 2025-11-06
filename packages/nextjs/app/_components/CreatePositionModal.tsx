@@ -64,7 +64,8 @@ export function CreatePositionModal({ isOpen, onClose }: CreatePositionModalProp
     }
   }, [ethAmountInput]);
 
-  const MIN_ETH = parseEther("1");
+  // TODO: Fetch these values from RoundOrchestrator contract constants (MIN_POSITION_ETH, MAX_POSITION_ETH)
+  const MIN_ETH = parseEther("0.0001");
   const MAX_ETH = parseEther("100");
 
   const isTokenAmountValid = tokenAmountWei !== null;
@@ -80,7 +81,7 @@ export function CreatePositionModal({ isOpen, onClose }: CreatePositionModalProp
       return;
     }
     if (!isEthAmountValid) {
-      setFormError("ETH deposit must be between 1 and 100.");
+      setFormError("ETH deposit must be between 0.0001 and 100.");
       return;
     }
 
@@ -187,19 +188,19 @@ export function CreatePositionModal({ isOpen, onClose }: CreatePositionModalProp
             <label className="block text-sm font-medium mb-2">Initial ETH Liquidity</label>
             <input
               type="number"
-              min="1"
+              min="0.0001"
               max="100"
-              step="0.01"
+              step="0.0001"
               value={ethAmountInput}
               onChange={event => {
                 setEthAmountInput(event.target.value);
                 setFormError(null);
               }}
-              placeholder="e.g., 1"
+              placeholder="e.g., 0.01"
               className="input input-bordered w-full"
               disabled={isCreating || isImageUploading}
             />
-            <p className="mt-1 text-xs text-base-content/70">Allowed range: 1 – 100 ETH</p>
+            <p className="mt-1 text-xs text-base-content/70">Allowed range: 0.0001 – 100 ETH</p>
           </div>
 
           <div className="bg-base-200 rounded-xl p-4 space-y-2">
