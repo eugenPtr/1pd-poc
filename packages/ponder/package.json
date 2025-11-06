@@ -8,7 +8,7 @@
     "dev": "rm -rf .ponder && ponder dev",
     "lint": "eslint .",
     "serve": "ponder serve",
-    "start": "ponder start",
+    "start": "ponder start --port ${PORT:-42069}",
     "typecheck": "tsc"
   },
   "dependencies": {
