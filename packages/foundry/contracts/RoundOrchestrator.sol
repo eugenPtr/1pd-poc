@@ -13,10 +13,10 @@ contract RoundOrchestrator is Ownable, ReentrancyGuard {
     
     // Constants
     uint256 public constant PERCENTAGE_BASE = 10000; // 100% = 10000
-    uint256 public constant MIN_POSITION_ETH = 1 ether;
+    uint256 public constant MIN_POSITION_ETH = 0.0001 ether;
     uint256 public constant MAX_POSITION_ETH = 100 ether;
-    uint256 public constant MIN_DURATION = 1 hours;
-    uint256 public constant MAX_DURATION = 7 days;
+    uint256 public constant MIN_DURATION = 10 minutes;
+    uint256 public constant MAX_DURATION = 1 days;
     uint256 public constant LIQUIDATION_THRESHOLD = 9000; // 90% price drop
     uint256 public constant SWAP_FEE_PERCENTAGE = 5e15; // 0.5% in 1e18 format
 
