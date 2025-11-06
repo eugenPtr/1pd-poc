@@ -93,7 +93,7 @@ contract RoundOrchestrator is Ownable, ReentrancyGuard {
     emit RoundStarted(1, firstRound.startTime, firstRoundDuration, address(firstRound.bondingCurve));
     }
     
-    function startRound(uint256 duration) external onlyOwner {
+    function startRound(uint256 duration) external {
         require(duration >= MIN_DURATION && duration <= MAX_DURATION, "Invalid duration");
 
     Round storage currentRound = roundIdToRound[currentRoundId];

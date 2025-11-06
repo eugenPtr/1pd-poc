@@ -1,6 +1,6 @@
 {
-  "0x5DA244DEdfd5a107A72Ff2152db348793a68b883": "RoundOrchestrator",
-  "0x681CfFfe8329f9Dce346d1788Bf96B48548D536c": "PositionTokenFactory",
-  "0x6aaEadEe73a81E0D55F46c7Fba4B495B0d943867": "LBPFactory",
+  "0x1ac953D11a680E0c71A3D55cdF670597617f2640": "LBPFactory",
+  "0x778a632743af8B934b7919450c828AA1e408473f": "PositionTokenFactory",
+  "0xaa8F0F65B7fcD1078DDe20CA543AB6B54648d917": "RoundOrchestrator",
   "networkName": "arbitrum-sepolia"
 }
