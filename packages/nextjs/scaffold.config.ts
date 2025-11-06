@@ -14,6 +14,8 @@ export type ScaffoldConfig = BaseConfig;
 
 export const DEFAULT_ALCHEMY_API_KEY = "oKxs-03sij-U_N0iOlrSsZFr29-IqbuF";
 
+const THIRDWEB_CLIENT_ID = process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID;
+
 export const megaethTestnet = defineChain({
   id: 6342,
   name: "MegaETH Testnet",
@@ -24,8 +26,8 @@ export const megaethTestnet = defineChain({
     decimals: 18,
   },
   rpcUrls: {
-    default: { http: ["https://carrot.megaeth.com/rpc"] },
-    public: { http: ["https://carrot.megaeth.com/rpc"] },
+    default: { http: [`https://6342.rpc.thirdweb.com/${THIRDWEB_CLIENT_ID}`] },
+    public: { http: [`https://6342.rpc.thirdweb.com/${THIRDWEB_CLIENT_ID}`] },
   },
   blockExplorers: {
     default: { name: "MegaExplorer", url: "https://megaexplorer.xyz" },
