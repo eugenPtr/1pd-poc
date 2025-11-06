@@ -4,7 +4,7 @@ import deployedContracts from "../nextjs/contracts/deployedContracts";
 import { KNOWN_ABIS } from "../nextjs/contracts/knownAbis";
 import scaffoldConfig from "../nextjs/scaffold.config";
 
-const targetNetwork = scaffoldConfig.targetNetworks[0];
+const targetNetwork = process.env.NODE_ENV === "production" ? scaffoldConfig.targetNetworks[1] : scaffoldConfig.targetNetworks[0];
 const priceSamplerInterval = Number(process.env.PRICE_SAMPLER_INTERVAL ?? "1");
 
 const networks = {

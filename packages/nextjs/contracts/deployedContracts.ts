@@ -1615,6 +1615,811 @@ const deployedContracts = {
       deployedOnBlock: 228,
     },
   },
+  421614: {
+    LBPFactory: {
+      address: "0x56500053b7dbb9ace4ce2add7fabb10aa321f052",
+      abi: [
+        {
+          type: "function",
+          name: "deploy",
+          inputs: [
+            {
+              name: "_positionToken",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "_tokenAmount",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "_swapFee",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "_orchestrator",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "_bondingCurve",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "salt",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [
+            {
+              name: "lbp",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "payable",
+        },
+        {
+          type: "function",
+          name: "getDeployAddress",
+          inputs: [
+            {
+              name: "_positionToken",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "_tokenAmount",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "_swapFee",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "_orchestrator",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "_bondingCurve",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "salt",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "event",
+          name: "LBPDeployed",
+          inputs: [
+            {
+              name: "lbp",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "positionToken",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "salt",
+              type: "bytes32",
+              indexed: false,
+              internalType: "bytes32",
+            },
+          ],
+          anonymous: false,
+        },
+      ],
+      inheritedFunctions: {},
+      deployedOnBlock: 212349557,
+    },
+    PositionTokenFactory: {
+      address: "0x6b4901605d0c5af0c3c89869113d57f383707278",
+      abi: [
+        {
+          type: "function",
+          name: "deploy",
+          inputs: [
+            {
+              name: "_name",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "_symbol",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "_initialSupply",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "_initialOwner",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "_imageURI",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "salt",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [
+            {
+              name: "token",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "getDeployAddress",
+          inputs: [
+            {
+              name: "_name",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "_symbol",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "_initialSupply",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "_initialOwner",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "_imageURI",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "salt",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "event",
+          name: "PositionTokenDeployed",
+          inputs: [
+            {
+              name: "token",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "name",
+              type: "string",
+              indexed: false,
+              internalType: "string",
+            },
+            {
+              name: "symbol",
+              type: "string",
+              indexed: false,
+              internalType: "string",
+            },
+            {
+              name: "salt",
+              type: "bytes32",
+              indexed: false,
+              internalType: "bytes32",
+            },
+          ],
+          anonymous: false,
+        },
+      ],
+      inheritedFunctions: {},
+      deployedOnBlock: 212349560,
+    },
+    RoundOrchestrator: {
+      address: "0x524a1c00c096838adc6603d641c5fd7fe7d8e0f2",
+      abi: [
+        {
+          type: "constructor",
+          inputs: [
+            {
+              name: "initialOwner",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "firstRoundDuration",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "_lbpFactory",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "_positionTokenFactory",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "receive",
+          stateMutability: "payable",
+        },
+        {
+          type: "function",
+          name: "LIQUIDATION_THRESHOLD",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "MAX_DURATION",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "MAX_POSITION_ETH",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "MIN_DURATION",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "MIN_POSITION_ETH",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "PERCENTAGE_BASE",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "SWAP_FEE_PERCENTAGE",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "createPosition",
+          inputs: [
+            {
+              name: "name",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "symbol",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "tokenAmount",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "imageURI",
+              type: "string",
+              internalType: "string",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "payable",
+        },
+        {
+          type: "function",
+          name: "currentRoundId",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getCurrentBondingPool",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getOwnedSupply",
+          inputs: [
+            {
+              name: "lbpAddr",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getRoundPositions",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address[]",
+              internalType: "address[]",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "lbpAddressToPosition",
+          inputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [
+            {
+              name: "roundId",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "creator",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "lbpFactory",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "contract LBPFactory",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "liquidatePosition",
+          inputs: [
+            {
+              name: "lbpAddr",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "owner",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "positionTokenFactory",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "contract PositionTokenFactory",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "renounceOwnership",
+          inputs: [],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "roundIdToRound",
+          inputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "startTime",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "duration",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "endTime",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "winnerLbp",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "settled",
+              type: "bool",
+              internalType: "bool",
+            },
+            {
+              name: "bondingCurve",
+              type: "address",
+              internalType: "contract LinearBondingCurve",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "settleRound",
+          inputs: [],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "settleRoundEarly",
+          inputs: [],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "startRound",
+          inputs: [
+            {
+              name: "duration",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "transferOwnership",
+          inputs: [
+            {
+              name: "newOwner",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "event",
+          name: "OwnershipTransferred",
+          inputs: [
+            {
+              name: "previousOwner",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "newOwner",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "PositionCreated",
+          inputs: [
+            {
+              name: "roundId",
+              type: "uint256",
+              indexed: true,
+              internalType: "uint256",
+            },
+            {
+              name: "lbpAddress",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "creator",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "tokenAddress",
+              type: "address",
+              indexed: false,
+              internalType: "address",
+            },
+            {
+              name: "ethAmount",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+            {
+              name: "tokenSupply",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+            {
+              name: "name",
+              type: "string",
+              indexed: false,
+              internalType: "string",
+            },
+            {
+              name: "symbol",
+              type: "string",
+              indexed: false,
+              internalType: "string",
+            },
+            {
+              name: "imageURI",
+              type: "string",
+              indexed: false,
+              internalType: "string",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "PositionLiquidated",
+          inputs: [
+            {
+              name: "lbpAddress",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "RoundSettled",
+          inputs: [
+            {
+              name: "roundId",
+              type: "uint256",
+              indexed: true,
+              internalType: "uint256",
+            },
+            {
+              name: "winnerLbp",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "RoundStarted",
+          inputs: [
+            {
+              name: "roundId",
+              type: "uint256",
+              indexed: true,
+              internalType: "uint256",
+            },
+            {
+              name: "startTime",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+            {
+              name: "duration",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+            {
+              name: "bondingPool",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "error",
+          name: "OwnableInvalidOwner",
+          inputs: [
+            {
+              name: "owner",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "OwnableUnauthorizedAccount",
+          inputs: [
+            {
+              name: "account",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "ReentrancyGuardReentrantCall",
+          inputs: [],
+        },
+      ],
+      inheritedFunctions: {},
+      deployedOnBlock: 212349564,
+    },
+  },
 } as const;
 
 export default deployedContracts satisfies GenericContractsDeclaration;
