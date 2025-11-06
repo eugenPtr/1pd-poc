@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { format } from "date-fns";
 import { formatEther } from "viem";
-import { useChainId } from "wagmi";
+import { useAccount, useChainId } from "wagmi";
 import { useLatestRound } from "~~/hooks/useLatestRound";
 import { useRoundPositions } from "~~/hooks/useRoundPositions";
 import { useSwapHistory } from "~~/hooks/useSwapHistory";
@@ -17,11 +17,19 @@ function LoadingState() {
   );
 }
 
-function EmptyState() {
+function EmptyState({ hasWallet }: { hasWallet: boolean }) {
+  if (!hasWallet) {
+    return (
+      <div className="flex items-center justify-center h-32 text-base-content/70">
+        Connect wallet to view swap history
+      </div>
+    );
+  }
   return <div className="flex items-center justify-center h-32 text-base-content/70">No swap history yet</div>;
 }
 
 export function SwapHistory() {
+  const { address } = useAccount();
   const chainId = useChainId();
   const { data: currentRound } = useLatestRound();
   const roundId = currentRound?.id;
@@ -29,7 +37,7 @@ export function SwapHistory() {
   const { data: swaps = [], isLoading, isFetching } = useSwapHistory();
 
   const hasSwaps = useMemo(() => swaps.length > 0, [swaps]);
-  const showSpinner = isLoading || (!hasSwaps && isFetching);
+  const showSpinner = address && (isLoading || (!hasSwaps && isFetching));
   const showEmpty = !showSpinner && !hasSwaps;
 
   return (
@@ -45,7 +53,7 @@ export function SwapHistory() {
       {showSpinner ? (
         <LoadingState />
       ) : showEmpty ? (
-        <EmptyState />
+        <EmptyState hasWallet={Boolean(address)} />
       ) : (
         <div className="flex flex-col gap-3">
           {swaps.map(swap => {

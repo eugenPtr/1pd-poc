@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { formatEther } from "viem";
+import { useAccount } from "wagmi";
 import { useBalances } from "~~/hooks/useBalances";
 
 const FALLBACK_IMAGE_URL = "https://placehold.co/256x256?text=No+Image";
@@ -59,10 +60,11 @@ function BalanceImage({ imageURI, alt }: BalanceImageProps) {
 }
 
 export function Balances() {
+  const { address } = useAccount();
   const { data: balances = [], isLoading, isFetching } = useBalances();
 
   const hasBalances = useMemo(() => balances.length > 0, [balances]);
-  const showSpinner = isLoading;
+  const showSpinner = address && isLoading;
   const showEmpty = !showSpinner && !hasBalances;
 
   return (
@@ -75,7 +77,7 @@ export function Balances() {
       {showSpinner ? (
         <LoadingState />
       ) : showEmpty ? (
-        <EmptyState hasWallet={true} />
+        <EmptyState hasWallet={Boolean(address)} />
       ) : (
         <div className="flex flex-col gap-3">
           {balances.map(balance => {
