@@ -26,8 +26,8 @@ type SwapHistoryResponse = {
 };
 
 const SWAP_HISTORY_GQL = /* GraphQL */ `
-  query SwapHistory($user: String!) {
-    swaps(where: { user: $user }, orderBy: "timestamp", orderDirection: "desc") {
+  query SwapHistory($user: String!, $lbps: [String!]) {
+    swaps(where: { user: $user, lbp_in: $lbps }, orderBy: "timestamp", orderDirection: "desc") {
       items {
         id
         lbp
@@ -43,21 +43,22 @@ const SWAP_HISTORY_GQL = /* GraphQL */ `
   }
 `;
 
-export function useSwapHistory() {
+export function useSwapHistory(roundId?: string, lbpAddresses?: readonly `0x${string}`[]) {
   const { address } = useAccount();
-  const enabled = Boolean(address);
+  const enabled = Boolean(address) && Boolean(roundId) && Boolean(lbpAddresses && lbpAddresses.length > 0);
 
   return useQuery<SwapHistoryResponse, Error, SwapEvent[]>({
-    queryKey: ["swapHistory", address],
+    queryKey: ["swapHistory", address, roundId],
     enabled,
     staleTime: 60_000,
     refetchInterval: REFETCH_INTERVAL,
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
     queryFn: () => {
-      console.log(`Fetching swap history for user: ${address}`);
+      console.log(`Fetching swap history for user: ${address}, round: ${roundId}, lbps: ${lbpAddresses?.length}`);
       return graphqlRequest<SwapHistoryResponse>(SWAP_HISTORY_GQL, {
         user: address,
+        lbps: lbpAddresses,
       });
     },
     select: data => {

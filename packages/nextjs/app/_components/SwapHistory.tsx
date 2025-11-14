@@ -34,7 +34,16 @@ export function SwapHistory() {
   const { data: currentRound } = useLatestRound();
   const roundId = currentRound?.id;
   const { data: positionsMap } = useRoundPositions(roundId);
-  const { data: swaps = [], isLoading, isFetching } = useSwapHistory();
+
+  // Collect all LBP addresses for the current round (positions + bonding pool)
+  const lbpAddresses = useMemo(() => {
+    if (!positionsMap || !currentRound?.bondingPool) return undefined;
+    const addresses = Array.from(positionsMap.keys());
+    addresses.push(currentRound.bondingPool);
+    return addresses;
+  }, [positionsMap, currentRound?.bondingPool]);
+
+  const { data: swaps = [], isLoading, isFetching } = useSwapHistory(roundId, lbpAddresses);
 
   const hasSwaps = useMemo(() => swaps.length > 0, [swaps]);
   const showSpinner = address && (isLoading || (!hasSwaps && isFetching));
