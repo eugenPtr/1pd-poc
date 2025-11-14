@@ -43,7 +43,8 @@ contract RoundOrchestrator is Ownable, ReentrancyGuard {
     
     // State variables
     uint256 public currentRoundId;
-    
+    uint256 public creatorAllocationBps; // Basis points: 1000 = 10%
+
     mapping(uint256 => Round) public roundIdToRound;
     mapping(address => Position) public lbpAddressToPosition;
 
@@ -62,6 +63,7 @@ contract RoundOrchestrator is Ownable, ReentrancyGuard {
     );
     event PositionLiquidated(address indexed lbpAddress);
     event RoundSettled(uint256 indexed roundId, address indexed winnerLbp);
+    event CreatorAllocationUpdated(uint256 oldBps, uint256 newBps);
 
     constructor(
         address initialOwner,
@@ -75,6 +77,7 @@ contract RoundOrchestrator is Ownable, ReentrancyGuard {
 
         lbpFactory = LBPFactory(_lbpFactory);
         positionTokenFactory = PositionTokenFactory(_positionTokenFactory);
+        creatorAllocationBps = 1000; // 10% initial allocation
 
         currentRoundId = 1;
     Round storage firstRound = roundIdToRound[1];
@@ -120,7 +123,18 @@ contract RoundOrchestrator is Ownable, ReentrancyGuard {
 
     emit RoundStarted(currentRoundId, newRound.startTime, duration, address(newRound.bondingCurve));
     }
-    
+
+    /**
+     * @dev Set the creator allocation percentage
+     * @param newBps New allocation in basis points (1000 = 10%)
+     */
+    function setCreatorAllocation(uint256 newBps) external onlyOwner {
+        require(newBps <= 5000, "Allocation cannot exceed 50%");
+        uint256 oldBps = creatorAllocationBps;
+        creatorAllocationBps = newBps;
+        emit CreatorAllocationUpdated(oldBps, newBps);
+    }
+
     /**
      * @dev Create a new position in the current round
      */
@@ -136,10 +150,15 @@ contract RoundOrchestrator is Ownable, ReentrancyGuard {
     Round storage round = roundIdToRound[currentRoundId];
         require(block.timestamp < round.endTime, "Round already ended");
 
+        // Calculate creator allocation
+        uint256 creatorTokens = (tokenAmount * creatorAllocationBps) / PERCENTAGE_BASE;
+        uint256 poolTokens = tokenAmount - creatorTokens;
+        require(poolTokens > 0, "Pool tokens must be positive");
+
         // Generate salt for CREATE2
     bytes32 salt = keccak256(abi.encodePacked(currentRoundId, roundIdToRound[currentRoundId].lbps.length + 1));
 
-        // Deploy position token using factory
+        // Deploy position token using factory (full supply)
         address positionToken = positionTokenFactory.deploy(
             name,
             symbol,
@@ -152,25 +171,28 @@ contract RoundOrchestrator is Ownable, ReentrancyGuard {
         // Compute LBP address before deployment
         address lbpAddress = lbpFactory.getDeployAddress(
             positionToken,
-            tokenAmount,
+            poolTokens,  // Only pool portion goes to LBP
             SWAP_FEE_PERCENTAGE / 1e13,
             address(this),
             address(round.bondingCurve),
             salt
         );
 
-        // Approve tokens to computed LBP address for constructor transfer
-        PositionToken(positionToken).approve(lbpAddress, tokenAmount);
+        // Approve only pool tokens to computed LBP address for constructor transfer
+        PositionToken(positionToken).approve(lbpAddress, poolTokens);
 
-        // Deploy LBP using factory with CREATE2
+        // Deploy LBP using factory with CREATE2 (only pool tokens)
         address lbp = lbpFactory.deploy{value: msg.value}(
             positionToken,
-            tokenAmount,
+            poolTokens,  // Only pool portion goes to LBP
             SWAP_FEE_PERCENTAGE / 1e13,
             address(this),
             address(round.bondingCurve),
             salt
         );
+
+        // Transfer creator allocation directly to creator
+        PositionToken(positionToken).transfer(msg.sender, creatorTokens);
 
     lbpAddressToPosition[lbp] = Position({ roundId: currentRoundId, creator: msg.sender });
 

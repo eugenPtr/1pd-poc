@@ -1,5 +1,5 @@
 import { ponder } from "ponder:registry";
-import { round, position, liquidationEvent } from "ponder:schema";
+import { round, position, liquidationEvent, userPositionBalance } from "ponder:schema";
 
 const ERC20_METADATA_ABI = [
   {
@@ -19,6 +19,26 @@ const ERC20_METADATA_ABI = [
   {
     type: "function",
     name: "totalSupply",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+] as const;
+
+const ORCHESTRATOR_ABI = [
+  {
+    type: "function",
+    name: "getOwnedSupply",
+    inputs: [{ name: "lbpAddr", type: "address" }],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+] as const;
+
+const LBP_ABI = [
+  {
+    type: "function",
+    name: "positionTokenAmount",
     inputs: [],
     outputs: [{ name: "", type: "uint256" }],
     stateMutability: "view",
@@ -66,7 +86,7 @@ ponder.on("RoundOrchestrator:PositionCreated", async ({ event, context }) => {
 
   console.log(`Event PositionCreated: roundId=${roundId}, lbp=${lbpAddress}, token=${tokenAddress}`);
 
-  const [tokenName, tokenSymbol, tokenTotalSupply] = await Promise.all([
+  const [tokenName, tokenSymbol, tokenTotalSupply, tokenAmountInPool] = await Promise.all([
     safeReadContract(() =>
       context.client.readContract({
         address: tokenAddress,
@@ -88,9 +108,16 @@ ponder.on("RoundOrchestrator:PositionCreated", async ({ event, context }) => {
         functionName: "totalSupply",
       }) as Promise<bigint>,
     ),
+    safeReadContract(() =>
+      context.client.readContract({
+        address: lbpAddress,
+        abi: LBP_ABI,
+        functionName: "positionTokenAmount",
+      }) as Promise<bigint>,
+    ),
   ]);
 
-  console.log(`Token metadata: name=${tokenName}, symbol=${tokenSymbol}, totalSupply=${tokenTotalSupply}`);
+  console.log(`Token metadata: name=${tokenName}, symbol=${tokenSymbol}, totalSupply=${tokenTotalSupply}, tokenAmountInPool=${tokenAmountInPool}`);
 
   await context.db
     .insert(position)
@@ -101,7 +128,7 @@ ponder.on("RoundOrchestrator:PositionCreated", async ({ event, context }) => {
       tokenAddress,
       ethAmount: event.args.ethAmount as bigint,
       tokenTotalSupply: tokenTotalSupply ?? 0n,
-      tokenAmountInPool: tokenTotalSupply ?? 0n,
+      tokenAmountInPool: tokenAmountInPool ?? 0n,
       tokenName: tokenName ?? null,
       tokenSymbol: tokenSymbol ?? null,
       imageURI: event.args.imageURI as string,
@@ -110,6 +137,25 @@ ponder.on("RoundOrchestrator:PositionCreated", async ({ event, context }) => {
     .onConflictDoNothing();
 
   console.log(`Stored position ${lbpAddress} in database`);
+
+  // Set creator's initial token balance (creator allocation)
+  const creatorBalance = (tokenTotalSupply ?? 0n) - (tokenAmountInPool ?? 0n);
+  if (creatorBalance > 0n) {
+    const creator = event.args.creator as `0x${string}`;
+    const balanceId = `${creator}-${lbpAddress}`;
+
+    await context.db
+      .insert(userPositionBalance)
+      .values({
+        id: balanceId,
+        user: creator,
+        lbp: lbpAddress,
+        balance: creatorBalance,
+      })
+      .onConflictDoNothing();
+
+    console.log(`Set initial creator balance: ${creator.slice(0, 8)}... has ${creatorBalance} tokens`);
+  }
 });
 
 // Index RoundSettled to mark the round as settled and persist the winner without disturbing other fields
