@@ -5,6 +5,7 @@ import { erc20Abi, formatUnits, parseEther, parseUnits } from "viem";
 import { useAccount, useBalance, useReadContract, useWriteContract } from "wagmi";
 import { KNOWN_ABIS } from "~~/contracts/knownAbis";
 import { useTransactor } from "~~/hooks/scaffold-eth";
+import { useBalances } from "~~/hooks/useBalances";
 import { useBondingPoolPrices } from "~~/hooks/useBondingPoolPrices";
 import { useLatestRound } from "~~/hooks/useLatestRound";
 import { useLbpPrices } from "~~/hooks/useLbpPrices";
@@ -81,6 +82,19 @@ export function PositionTradeModal({ mode, position, isOpen, onClose, onSuccess 
     if (ethBalanceWei === null) return null;
     return formatNumber(Number(formatUnits(ethBalanceWei, 18)), 4);
   }, [ethBalanceWei]);
+
+  // Get token balance for sell mode using the same hook as Balances component
+  const { data: balances = [] } = useBalances();
+  const tokenBalanceWei = useMemo(() => {
+    if (mode !== "sell") return null;
+    const balance = balances.find(b => b.lbp === position.lbpAddress);
+    return balance ? balance.balance : 0n;
+  }, [mode, balances, position.lbpAddress]);
+
+  const tokenBalanceDisplay = useMemo(() => {
+    if (mode !== "sell" || tokenBalanceWei === null) return null;
+    return formatNumber(Number(formatUnits(tokenBalanceWei, 18)), 4);
+  }, [mode, tokenBalanceWei]);
 
   const amountEthWei = useMemo(() => {
     if (mode !== "buy" || !amountInput) return null;
@@ -182,10 +196,12 @@ export function PositionTradeModal({ mode, position, isOpen, onClose, onSuccess 
 
   const exceedsEthBalance =
     mode === "buy" && ethBalanceWei !== null && amountEthWei !== null ? amountEthWei > ethBalanceWei : false;
+  const exceedsTokenBalance =
+    mode === "sell" && tokenBalanceWei !== null && amountTokenWei !== null ? amountTokenWei > tokenBalanceWei : false;
   const hasValidAmount =
     mode === "buy"
       ? amountEthWei !== null && !exceedsEthBalance && amountEthWei > 0n && ethBalanceWei !== null
-      : amountTokenWei !== null && amountTokenWei > 0n;
+      : amountTokenWei !== null && amountTokenWei > 0n && !exceedsTokenBalance;
 
   const isActionDisabled =
     !isOpen ||
@@ -199,8 +215,13 @@ export function PositionTradeModal({ mode, position, isOpen, onClose, onSuccess 
     (mode === "sell" && isAllowanceFetching);
 
   const handleMaxClick = () => {
-    if (mode !== "buy" || ethBalanceWei === null || ethBalanceWei === 0n) return;
-    setAmountInput(formatWeiForInput(ethBalanceWei));
+    if (mode === "buy") {
+      if (ethBalanceWei === null || ethBalanceWei === 0n) return;
+      setAmountInput(formatWeiForInput(ethBalanceWei));
+    } else {
+      if (tokenBalanceWei === null || tokenBalanceWei === 0n) return;
+      setAmountInput(formatWeiForInput(tokenBalanceWei));
+    }
     setError(null);
   };
 
@@ -211,6 +232,21 @@ export function PositionTradeModal({ mode, position, isOpen, onClose, onSuccess 
           const parsed = parseEther(value);
           if (parsed > ethBalanceWei) {
             setAmountInput(formatWeiForInput(ethBalanceWei));
+            setError(null);
+            return;
+          }
+        } catch {
+          // Allow partial inputs like "0."
+        }
+      }
+    }
+
+    if (mode === "sell" && tokenBalanceWei !== null) {
+      if (value) {
+        try {
+          const parsed = parseUnits(value, 18);
+          if (parsed > tokenBalanceWei) {
+            setAmountInput(formatWeiForInput(tokenBalanceWei));
             setError(null);
             return;
           }
@@ -318,26 +354,37 @@ export function PositionTradeModal({ mode, position, isOpen, onClose, onSuccess 
                 value={amountInput}
                 onChange={event => handleAmountChange(event.target.value)}
                 placeholder="0.0"
-                className={`input input-bordered w-full ${mode === "buy" ? "pr-16" : ""}`}
+                className="input input-bordered w-full pr-16"
                 disabled={isSubmitting}
               />
-              {mode === "buy" && (
-                <button
-                  type="button"
-                  className="btn btn-ghost btn-xs absolute right-2 top-1/2 -translate-y-1/2"
-                  onClick={handleMaxClick}
-                  disabled={isSubmitting || ethBalanceWei === null || ethBalanceWei === 0n}
-                >
-                  Max
-                </button>
-              )}
+              <button
+                type="button"
+                className="btn btn-ghost btn-xs absolute right-2 top-1/2 -translate-y-1/2"
+                onClick={handleMaxClick}
+                disabled={
+                  isSubmitting ||
+                  (mode === "buy"
+                    ? ethBalanceWei === null || ethBalanceWei === 0n
+                    : tokenBalanceWei === null || tokenBalanceWei === 0n)
+                }
+              >
+                Max
+              </button>
             </div>
-            {mode === "buy" && (
-              <div className="mt-1 text-xs text-base-content/70 flex justify-between">
-                <span>Available</span>
-                <span>{!address ? "Connect wallet" : ethBalanceWei === null ? "..." : `${ethBalanceDisplay} ETH`}</span>
-              </div>
-            )}
+            <div className="mt-1 text-xs text-base-content/70 flex justify-between">
+              <span>Available</span>
+              <span>
+                {!address
+                  ? "Connect wallet"
+                  : mode === "buy"
+                    ? ethBalanceWei === null
+                      ? "..."
+                      : `${ethBalanceDisplay} ETH`
+                    : tokenBalanceWei === null
+                      ? "..."
+                      : `${tokenBalanceDisplay} ${position.symbol}`}
+              </span>
+            </div>
           </div>
 
           <div className="bg-base-200 rounded-xl p-4 text-sm">
