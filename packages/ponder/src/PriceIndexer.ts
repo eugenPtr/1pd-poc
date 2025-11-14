@@ -82,20 +82,10 @@ ponder.on("priceSampler:block", async ({ event, context }) => {
   }
 
   const roundId = currentRound.id;
-
-  const lbps = await context.db.sql
-    .select({ lbp: position.lbp })
-    .from(position)
-    .where(eq(position.roundId, roundId));
-
-  if (lbps.length === 0) {
-    console.log("[PriceIndexer] No positions found for round", roundId);
-    return;
-  }
-
   const blockNumber = BigInt(block.number);
   const timestamp = BigInt(block.timestamp);
 
+  // Always index bonding pool price first (independent of positions)
   const bondingPoolAddress = currentRound.bondingPool as `0x${string}`;
 
   if (bondingPoolAddress) {
@@ -133,6 +123,17 @@ ponder.on("priceSampler:block", async ({ event, context }) => {
     }
   } else {
     console.warn("[PriceIndexer] Latest round missing bonding pool address");
+  }
+
+  // Now check for positions and index their prices
+  const lbps = await context.db.sql
+    .select({ lbp: position.lbp })
+    .from(position)
+    .where(eq(position.roundId, roundId));
+
+  if (lbps.length === 0) {
+    console.log("[PriceIndexer] No positions found for round", roundId, "- skipping position price indexing");
+    return;
   }
 
   for (const { lbp } of lbps) {

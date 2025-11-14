@@ -89,12 +89,14 @@ export function useBondingPoolPrices(bondingPool?: `0x${string}`) {
   const [points, setPoints] = useState<PricePoint[]>([]);
   const [latestPrice, setLatestPrice] = useState<number | null>(null);
   const [latestPriceWei, setLatestPriceWei] = useState<bigint | null>(null);
+  const [tailCursor, setTailCursor] = useState<string | null>(null);
 
   useEffect(() => {
     if (!normalizedPool) {
       setPoints([]);
       setLatestPrice(null);
       setLatestPriceWei(null);
+      setTailCursor(null);
     }
   }, [normalizedPool]);
 
@@ -142,11 +144,13 @@ export function useBondingPoolPrices(bondingPool?: `0x${string}`) {
       setLatestPrice(null);
       setLatestPriceWei(null);
     }
+    // Save the cursor from initial query to start tail queries from the right position
+    setTailCursor(initialQuery.data.cursor);
   }, [initialQuery.data]);
 
   const tailQuery = useQuery({
     queryKey: ["bondingPoolPrices", normalizedPool, "tail"],
-    enabled: Boolean(normalizedPool) && initialQuery.isSuccess,
+    enabled: Boolean(normalizedPool) && initialQuery.isSuccess && tailCursor !== null,
     refetchInterval: REFRESH_INTERVAL_MS,
     refetchIntervalInBackground: true,
     staleTime: 0,
@@ -155,7 +159,7 @@ export function useBondingPoolPrices(bondingPool?: `0x${string}`) {
         return { items: [] as BondingPoolPriceResponse["bondingPoolPrices"]["items"], cursor: null };
       }
 
-      const startCursor = initialQuery.data?.cursor ?? null;
+      const startCursor = tailCursor;
       const aggregated: BondingPoolPriceResponse["bondingPoolPrices"]["items"] = [];
       let cursor = startCursor;
       let lastCursor = startCursor;
@@ -182,8 +186,17 @@ export function useBondingPoolPrices(bondingPool?: `0x${string}`) {
   });
 
   useEffect(() => {
-    if (!tailQuery.data?.items || tailQuery.data.items.length === 0) return;
+    if (!tailQuery.data) return;
+
+    // Update cursor for next tail query
+    if (tailQuery.data.cursor) {
+      setTailCursor(tailQuery.data.cursor);
+    }
+
+    // Process incoming data
     const incomingItems = tailQuery.data.items;
+    if (!incomingItems || incomingItems.length === 0) return;
+
     const incomingPoints = convertItems(incomingItems);
     if (incomingPoints.length === 0) return;
 
