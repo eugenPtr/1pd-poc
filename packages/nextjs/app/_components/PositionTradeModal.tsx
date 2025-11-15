@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { erc20Abi, formatUnits, parseEther, parseUnits } from "viem";
 import { useAccount, useBalance, useReadContract, useWriteContract } from "wagmi";
 import { KNOWN_ABIS } from "~~/contracts/knownAbis";
@@ -42,6 +43,7 @@ export function PositionTradeModal({ mode, position, isOpen, onClose, onSuccess 
   const { address } = useAccount();
   const transactor = useTransactor();
   const { writeContractAsync } = useWriteContract();
+  const queryClient = useQueryClient();
 
   const [amountInput, setAmountInput] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -260,6 +262,32 @@ export function PositionTradeModal({ mode, position, isOpen, onClose, onSuccess 
     setError(null);
   };
 
+  const invalidateCachesAfterSwap = async () => {
+    // Wait 1 second for Ponder to index the swap event
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    console.log("[PositionTradeModal] Invalidating caches after swap");
+
+    // Get current round for swap history invalidation
+    const currentRound = latestRound;
+    const roundId = currentRound?.id;
+
+    // Buy/Sell Position Tokens invalidations
+    await queryClient.invalidateQueries({ queryKey: ["userBalances"] });
+    if (roundId) {
+      await queryClient.invalidateQueries({ queryKey: ["swapHistory", address, roundId] });
+    }
+    await queryClient.invalidateQueries({ queryKey: ["lbpPrices"] });
+    await queryClient.invalidateQueries({ queryKey: ["poolStates"] });
+
+    // If selling (buyToken=false), also invalidate bonding pool prices since BCT is received
+    if (mode === "sell" && bondingPoolAddress) {
+      await queryClient.invalidateQueries({ queryKey: ["bondingPoolPrices", bondingPoolAddress, "tail"] });
+    }
+
+    console.log("[PositionTradeModal] Cache invalidation complete");
+  };
+
   const handleConfirm = async () => {
     if (isActionDisabled) return;
 
@@ -318,6 +346,9 @@ export function PositionTradeModal({ mode, position, isOpen, onClose, onSuccess 
           }),
         );
       }
+
+      // Invalidate caches after transaction (with 1s delay for Ponder indexing)
+      await invalidateCachesAfterSwap();
 
       onSuccess?.();
       onClose();

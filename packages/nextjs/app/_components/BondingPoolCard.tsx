@@ -1,14 +1,16 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import ReactECharts from "echarts-for-react";
 import { formatEther, parseEther } from "viem";
-import { useWriteContract } from "wagmi";
+import { useAccount, useWriteContract } from "wagmi";
 import { KNOWN_ABIS } from "~~/contracts/knownAbis";
 import { useTransactor } from "~~/hooks/scaffold-eth";
 import { useBalances } from "~~/hooks/useBalances";
 import { useBondingPoolPrices } from "~~/hooks/useBondingPoolPrices";
+import { useLatestRound } from "~~/hooks/useLatestRound";
 import { PricePoint } from "~~/types/client_types";
 
 const COLORS = ["#39FF14"]; // fluorescent green
@@ -126,9 +128,12 @@ export function BondingPoolCard({ bondingPool }: BondingPoolCardProps) {
 
   // Sell functionality state
   const [sellAmount, setSellAmount] = useState("");
-  const { data: balances = [], refetch: refetchBalances } = useBalances();
+  const { address } = useAccount();
+  const { data: balances = [] } = useBalances();
+  const { data: latestRound } = useLatestRound();
   const transactor = useTransactor();
   const { writeContractAsync, isPending } = useWriteContract();
+  const queryClient = useQueryClient();
 
   // Get BCT balance
   const bctBalance = useMemo(() => {
@@ -166,6 +171,26 @@ export function BondingPoolCard({ bondingPool }: BondingPoolCardProps) {
     setSellAmount(formatEther(bctBalance));
   };
 
+  const invalidateCachesAfterBurn = async () => {
+    // Wait 1 second for Ponder to index the burn event
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    console.log("[BondingPoolCard] Invalidating caches after BCT burn");
+
+    // Burn BCT invalidations
+    await queryClient.invalidateQueries({ queryKey: ["userBalances"] });
+    if (bondingPool) {
+      await queryClient.invalidateQueries({ queryKey: ["bondingPoolPrices", bondingPool, "tail"] });
+    }
+
+    const roundId = latestRound?.id;
+    if (roundId && address) {
+      await queryClient.invalidateQueries({ queryKey: ["swapHistory", address, roundId] });
+    }
+
+    console.log("[BondingPoolCard] Cache invalidation complete");
+  };
+
   const handleSell = async () => {
     if (!isValidSell || !bondingPool) return;
 
@@ -179,9 +204,11 @@ export function BondingPoolCard({ bondingPool }: BondingPoolCardProps) {
         }),
       );
 
-      // Reset and refetch on success
+      // Invalidate caches after transaction (with 1s delay for Ponder indexing)
+      await invalidateCachesAfterBurn();
+
+      // Reset sell amount
       setSellAmount("");
-      await refetchBalances();
     } catch (error) {
       console.error("Failed to burn BCT:", error);
     }

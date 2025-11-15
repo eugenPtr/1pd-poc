@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { parseEther } from "viem";
 import { IPFSImageUpload } from "~~/components/IPFSImageUpload";
 import { useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
+import { useLatestRound } from "~~/hooks/useLatestRound";
 
 interface CreatePositionModalProps {
   isOpen: boolean;
@@ -24,6 +26,9 @@ export function CreatePositionModal({ isOpen, onClose }: CreatePositionModalProp
   const { writeContractAsync } = useScaffoldWriteContract({
     contractName: "RoundOrchestrator",
   });
+
+  const queryClient = useQueryClient();
+  const { data: latestRound } = useLatestRound();
 
   useEffect(() => {
     if (!isOpen) {
@@ -71,6 +76,24 @@ export function CreatePositionModal({ isOpen, onClose }: CreatePositionModalProp
   const isTokenAmountValid = tokenAmountWei !== null;
   const isEthAmountValid = ethAmountWei !== null && ethAmountWei >= MIN_ETH && ethAmountWei <= MAX_ETH;
 
+  const invalidateCachesAfterCreate = async () => {
+    // Wait 1 second for Ponder to index the position creation event
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    console.log("[CreatePositionModal] Invalidating caches after position creation");
+
+    // Create Position invalidations
+    const roundId = latestRound?.id;
+    if (roundId) {
+      await queryClient.invalidateQueries({ queryKey: ["roundPositions", roundId] });
+    }
+    await queryClient.invalidateQueries({ queryKey: ["lbpPrices"] });
+    await queryClient.invalidateQueries({ queryKey: ["latestRound"] });
+    await queryClient.invalidateQueries({ queryKey: ["poolStates"] });
+
+    console.log("[CreatePositionModal] Cache invalidation complete");
+  };
+
   const handleCreate = async () => {
     if (!name || !symbol || !imageIpfsUri) {
       setFormError("Please fill in all fields and upload an image.");
@@ -93,6 +116,9 @@ export function CreatePositionModal({ isOpen, onClose }: CreatePositionModalProp
         args: [name, symbol, tokenAmountWei!, imageIpfsUri],
         value: ethAmountWei!,
       });
+
+      // Invalidate caches after transaction (with 1s delay for Ponder indexing)
+      await invalidateCachesAfterCreate();
 
       setName("");
       setSymbol("");
