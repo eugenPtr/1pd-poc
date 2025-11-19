@@ -123,7 +123,7 @@ type BondingPoolCardProps = {
 
 export function BondingPoolCard({ bondingPool }: BondingPoolCardProps) {
   const { series, latestPrice, isLoading } = useBondingPoolPrices(bondingPool ?? undefined);
-  const points = series?.points ?? [];
+  const points = useMemo(() => series?.points ?? [], [series]);
   const chartOptions = useMemo(() => buildChartOptions(points), [points]);
 
   // Sell functionality state

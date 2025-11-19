@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import { CreatePositionModal } from "./CreatePositionModal";
 import { PositionTradeModal } from "./PositionTradeModal";
 import { useQueryClient } from "@tanstack/react-query";
@@ -55,10 +56,13 @@ function PositionImage({ imageURI, alt }: PositionImageProps) {
   return (
     <div className="flex-shrink-0 w-20 h-20 relative">
       {showSkeleton && <div className="absolute inset-0 rounded-2xl bg-base-200 animate-pulse" />}
-      <img
+      <Image
         src={src}
         alt={alt}
-        className={`h-full w-full rounded-2xl object-cover transition-opacity duration-300 ${
+        fill
+        unoptimized
+        sizes="80px"
+        className={`rounded-2xl object-cover transition-opacity duration-300 ${
           showSkeleton ? "opacity-0" : "opacity-100"
         }`}
         onError={() => {

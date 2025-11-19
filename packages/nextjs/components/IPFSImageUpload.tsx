@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import Image from "next/image";
 import { useIPFSUpload } from "~~/hooks/useIPFSUpload";
 
 interface IPFSImageUploadProps {
@@ -56,7 +57,7 @@ export function IPFSImageUpload({ onUploadComplete, onUploadingChange, currentIm
       >
         {displayUrl && (
           <>
-            <img src={displayUrl} alt="Position preview" className="absolute inset-0 h-full w-full object-cover" />
+            <Image src={displayUrl} alt="Position preview" fill unoptimized sizes="100vw" className="object-cover" />
             <div className="absolute inset-0 bg-base-200/75 backdrop-blur-[1px]" />
           </>
         )}

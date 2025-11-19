@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import { formatEther } from "viem";
 import { useAccount } from "wagmi";
 import { useBalances } from "~~/hooks/useBalances";
@@ -46,9 +47,12 @@ function BalanceImage({ imageURI, alt }: BalanceImageProps) {
   const src = hasErrored ? FALLBACK_IMAGE_URL : (normalizedUrl ?? FALLBACK_IMAGE_URL);
 
   return (
-    <img
+    <Image
       src={src}
       alt={alt}
+      width={32}
+      height={32}
+      unoptimized
       className="h-8 w-8 rounded-full object-cover flex-shrink-0"
       onError={() => {
         if (!hasErrored) {

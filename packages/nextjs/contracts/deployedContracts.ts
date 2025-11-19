@@ -974,7 +974,7 @@ const deployedContracts = {
   },
   6343: {
     LBPFactory: {
-      address: "0x56500053b7dbb9ace4ce2add7fabb10aa321f052",
+      address: "0x6aaEadEe73a81E0D55F46c7Fba4B495B0d943867",
       abi: [
         {
           type: "function",
@@ -1121,9 +1121,10 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
+      deployedOnBlock: 3845136,
     },
     PositionTokenFactory: {
-      address: "0x6b4901605d0c5af0c3c89869113d57f383707278",
+      address: "0x681CfFfe8329f9Dce346d1788Bf96B48548D536c",
       abi: [
         {
           type: "function",
@@ -1246,9 +1247,10 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
+      deployedOnBlock: 3845136,
     },
     RoundOrchestrator: {
-      address: "0x524a1c00c096838adc6603d641c5fd7fe7d8e0f2",
+      address: "0x5DA244DEdfd5a107A72Ff2152db348793a68b883",
       abi: [
         {
           type: "constructor",
@@ -1934,6 +1936,7 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
+      deployedOnBlock: 3845136,
     },
   },
   31337: {
