@@ -6,13 +6,16 @@ import { CreatePositionModal } from "./CreatePositionModal";
 import { PositionTradeModal } from "./PositionTradeModal";
 import { useQueryClient } from "@tanstack/react-query";
 import { formatEther, formatUnits } from "viem";
+import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
 import { useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
+import { useTargetNetwork } from "~~/hooks/scaffold-eth/useTargetNetwork";
 import { useCachedImage } from "~~/hooks/useCachedImage";
 import { useLatestRound } from "~~/hooks/useLatestRound";
 import { useLbpPrices } from "~~/hooks/useLbpPrices";
 import { useRoundPositions } from "~~/hooks/useRoundPositions";
 import { PositionSummary } from "~~/types/client_types";
 import { formatMarketCap, getMarketCapColor } from "~~/utils/marketCap";
+import { getBlockExplorerAddressLink } from "~~/utils/scaffold-eth";
 
 const FALLBACK_IMAGE_URL = "https://placehold.co/256x256?text=No+Image";
 
@@ -85,6 +88,7 @@ export function Positions() {
   const [pendingLiquidation, setPendingLiquidation] = useState<`0x${string}` | null>(null);
 
   const queryClient = useQueryClient();
+  const { targetNetwork } = useTargetNetwork();
   const { writeContractAsync: writeOrchestrator } = useScaffoldWriteContract({
     contractName: "RoundOrchestrator",
   });
@@ -182,8 +186,19 @@ export function Positions() {
                   <PositionImage imageURI={position.imageURI} alt={position.name} />
 
                   <div className="flex-1 flex flex-col justify-center gap-1">
-                    <div className="font-medium text-lg">
-                      {position.name} - ${position.symbol}
+                    <div className="font-medium text-lg flex items-center gap-2">
+                      <span>
+                        {position.name} - ${position.symbol}
+                      </span>
+                      <a
+                        href={getBlockExplorerAddressLink(targetNetwork, position.tokenAddress)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-primary hover:text-primary-focus transition"
+                        aria-label="View token on block explorer"
+                      >
+                        <ArrowTopRightOnSquareIcon className="h-4 w-4" />
+                      </a>
                     </div>
                     <div className="relative">
                       {/* Position Percentage - Right side above progress bar */}
