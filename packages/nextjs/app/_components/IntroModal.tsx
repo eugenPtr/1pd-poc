@@ -37,7 +37,8 @@ export function IntroModal({ isOpen, onClose }: IntroModalProps) {
           <section className="space-y-2">
             <h3 className="text-base font-semibold text-base-content">What can you do here?</h3>
             <ul className="list-disc space-y-2 pl-5">
-              <li>During a round, create an option (position) for a token that might launch at the end.</li>
+              <li>First, scroll down and find the button to start a new round</li>
+              <li>During a round, create an option (position) - this is a token proposal</li>
               <li>Position creators keep 10% of the supply.</li>
               <li>
                 Each position has its own LBP whose price decays over time and can be liquidated below a threshold{" "}
