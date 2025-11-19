@@ -114,3 +114,15 @@ To know more about its features, check out our [website](https://scaffoldeth.io)
 We welcome contributions to Scaffold-ETH 2!
 
 Please see [CONTRIBUTING.MD](https://github.com/scaffold-eth/scaffold-eth-2/blob/main/CONTRIBUTING.md) for more information and guidelines for contributing to Scaffold-ETH 2.
+
+
+## Verifying contracts on Megaeth
+
+```
+forge verify-contract \
+  --rpc-url https://timothy.megaeth.com/rpc \
+  --verifier blockscout \
+  --verifier-url 'https://megaeth-testnet-v2.blockscout.com/api/' \
+  0x6aaEadEe73a81E0D55F46c7Fba4B495B0d943867 \
+  contracts/LBPFactory.sol:LBPFactory
+```

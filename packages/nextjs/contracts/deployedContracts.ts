@@ -1121,10 +1121,10 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 3845136,
+      deployedOnBlock: 3876958,
     },
     PositionTokenFactory: {
-      address: "0x681CfFfe8329f9Dce346d1788Bf96B48548D536c",
+      address: "0x1ac953D11a680E0c71A3D55cdF670597617f2640",
       abi: [
         {
           type: "function",
@@ -1247,10 +1247,10 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 3845136,
+      deployedOnBlock: 3876958,
     },
     RoundOrchestrator: {
-      address: "0x5DA244DEdfd5a107A72Ff2152db348793a68b883",
+      address: "0x778a632743af8B934b7919450c828AA1e408473f",
       abi: [
         {
           type: "constructor",
@@ -1936,7 +1936,7 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 3845136,
+      deployedOnBlock: 3876958,
     },
   },
   31337: {

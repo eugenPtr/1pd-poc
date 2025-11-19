@@ -57,9 +57,9 @@ export function useScaffoldWriteContract<TContractName extends ContractName>(
 ): ScaffoldWriteContractReturnType<TContractName> {
   const finalConfig =
     typeof configOrName === "string"
-      ? { contractName: configOrName, writeContractParams, chainId: undefined }
+      ? { contractName: configOrName, writeContractParams, chainId: undefined, disableSimulate: true }
       : (configOrName as UseScaffoldWriteConfig<TContractName>);
-  const { contractName, chainId, writeContractParams: finalWriteContractParams } = finalConfig;
+  const { contractName, chainId, writeContractParams: finalWriteContractParams, disableSimulate = true } = finalConfig;
 
   const wagmiConfig = useConfig();
 
@@ -84,7 +84,7 @@ export function useScaffoldWriteContract<TContractName extends ContractName>(
     chainId: selectedNetwork.id as AllowedChainIds,
   });
 
-  const DEFAULT_GAS_LIMIT = 30_000_000n;
+  const DEFAULT_GAS_LIMIT = 100_000_000n;
 
   const sendContractWriteAsyncTx = async <
     TFunctionName extends ExtractAbiFunctionNames<ContractAbi<TContractName>, "nonpayable" | "payable">,
@@ -118,12 +118,22 @@ export function useScaffoldWriteContract<TContractName extends ContractName>(
         ...variables,
       } as WriteContractVariables<Abi, string, any[], Config, number>;
 
-      if (!finalConfig?.disableSimulate) {
+      console.log("🔍 Debug Info:", {
+        disableSimulate,
+        gasLimit: DEFAULT_GAS_LIMIT.toString(),
+        willSimulate: !disableSimulate,
+        writeContractObject: { ...writeContractObject, abi: "[ABI_HIDDEN]" },
+      });
+
+      if (!disableSimulate) {
+        console.log("⚠️ SIMULATING CONTRACT - This should be skipped!");
         await simulateContractWriteAndNotifyError({
           wagmiConfig,
           writeContractParams: writeContractObject,
           chainId: selectedNetwork.id as AllowedChainIds,
         });
+      } else {
+        console.log("✅ Skipping simulation as expected");
       }
 
       const makeWriteWithParams = () =>
