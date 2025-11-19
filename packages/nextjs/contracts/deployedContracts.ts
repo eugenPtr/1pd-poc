@@ -1121,7 +1121,6 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 3845136,
     },
     PositionTokenFactory: {
       address: "0x6b4901605d0c5af0c3c89869113d57f383707278",
@@ -1247,7 +1246,6 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 3845136,
     },
     RoundOrchestrator: {
       address: "0x524a1c00c096838adc6603d641c5fd7fe7d8e0f2",
@@ -1936,7 +1934,6 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 3845136,
     },
   },
   31337: {
@@ -2088,7 +2085,7 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 66,
+      deployedOnBlock: 4,
     },
     PositionTokenFactory: {
       address: "0xa15bb66138824a1c7167f5e85b957d04dd34e468",
@@ -2214,7 +2211,7 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 66,
+      deployedOnBlock: 4,
     },
     RoundOrchestrator: {
       address: "0xb19b36b1456e65e3a6d514d3f715f204bd59f431",
@@ -2903,7 +2900,7 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 66,
+      deployedOnBlock: 4,
     },
   },
   421614: {

@@ -1,8 +1,10 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { AccessGate } from "./_components/AccessGate";
 import { Balances } from "./_components/Balances";
 import { BondingPoolCard } from "./_components/BondingPoolCard";
+import { IntroModal } from "./_components/IntroModal";
 import { Positions } from "./_components/Positions";
 import { PriceChart } from "./_components/PriceChart";
 import { RoundState } from "./_components/RoundState";
@@ -14,6 +16,22 @@ const Home: NextPage = () => {
   const { data: currentRound, isLoading } = useLatestRound();
   const accessCode = process.env.NEXT_PUBLIC_ACCESS_CODE;
   const gateEnabled = process.env.NEXT_PUBLIC_ACCESS_GATE_ENABLED === "true";
+  const [showIntroModal, setShowIntroModal] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const hasSeenIntro = window.sessionStorage.getItem("intro-modal-dismissed");
+    if (!hasSeenIntro) {
+      setShowIntroModal(true);
+    }
+  }, []);
+
+  const handleCloseIntro = () => {
+    if (typeof window !== "undefined") {
+      window.sessionStorage.setItem("intro-modal-dismissed", "true");
+    }
+    setShowIntroModal(false);
+  };
 
   return (
     <AccessGate requiredCode={accessCode} enabled={gateEnabled}>
@@ -57,6 +75,7 @@ const Home: NextPage = () => {
           </div>
         </div>
       </div>
+      <IntroModal isOpen={showIntroModal} onClose={handleCloseIntro} />
     </AccessGate>
   );
 };
