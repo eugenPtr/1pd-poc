@@ -1,8 +1,11 @@
+import dotenv from "dotenv";
 import { createConfig, factory } from "ponder";
 import { http, parseAbiItem } from "viem";
 import deployedContracts from "../nextjs/contracts/deployedContracts";
 import { KNOWN_ABIS } from "../nextjs/contracts/knownAbis";
 import scaffoldConfig from "../nextjs/scaffold.config";
+
+dotenv.config();
 
 const targetNetwork = scaffoldConfig.targetNetworks[0];
 const priceSamplerInterval = Number(process.env.PRICE_SAMPLER_INTERVAL ?? "1");
@@ -13,6 +16,11 @@ const networks = {
     transport: http(process.env[`PONDER_RPC_URL_${targetNetwork.id}`]),
   },
 };
+
+console.log(
+  `[ponder] Using RPC for chain ${targetNetwork.id}:`,
+  process.env[`PONDER_RPC_URL_${targetNetwork.id}`] ?? "default",
+);
 
 const contractNames = Object.keys(deployedContracts[targetNetwork.id]);
 

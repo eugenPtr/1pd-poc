@@ -43,10 +43,10 @@ export function SwapHistory() {
     return addresses;
   }, [positionsMap, currentRound?.bondingPool]);
 
-  const { data: swaps = [], isLoading, isFetching } = useSwapHistory(roundId, lbpAddresses);
+  const { data: swaps = [], isLoading } = useSwapHistory(roundId, lbpAddresses);
 
   const hasSwaps = useMemo(() => swaps.length > 0, [swaps]);
-  const showSpinner = address && (isLoading || (!hasSwaps && isFetching));
+  const showSpinner = isLoading;
   const showEmpty = !showSpinner && !hasSwaps;
 
   return (
@@ -56,7 +56,6 @@ export function SwapHistory() {
           <h3 className="text-2xl font-semibold">Swap History</h3>
           <p className="text-sm text-base-content/70">Your recent trades</p>
         </div>
-        {isFetching && !isLoading ? <span className="loading loading-spinner loading-sm" /> : null}
       </div>
 
       {showSpinner ? (

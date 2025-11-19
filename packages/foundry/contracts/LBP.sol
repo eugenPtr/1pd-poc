@@ -12,7 +12,7 @@ import {UD60x18, ud, unwrap} from "@prb/math/UD60x18.sol";
  * @dev Simplified two-token pool: PositionToken + ETH
  * Features declining weights over time for price discovery (unbounded decay)
  * Routes exits through bonding curve for BCT rewards
- * Can be liquidated if price drops 99% or more
+ * Can be liquidated if price drops below a configured threshold
  */
 contract LBP is ReentrancyGuard {
     using SafeERC20 for IERC20;
@@ -24,10 +24,10 @@ contract LBP is ReentrancyGuard {
     address public immutable ORCHESTRATOR;
     address public immutable BONDING_CURVE;
 
-    // Pool parameters - weights for 99% max drop
-    uint256 public constant START_WEIGHT = 9091;  // 90.91%
-    // Hyperbolic decay timescale in seconds. With T0 ≈ 9600s (~2.67h), after ~1 day weight ~10% of start
-    uint256 public constant DECAY_TIMESCALE = 9600;
+    // Pool parameters - configurable per-deployment
+    uint256 public immutable startWeightBps; // e.g., 90.91%
+    uint256 public immutable decayTimescale; // Decay curve timescale
+    uint256 public immutable liquidationThresholdBps; // Percentage of initial price
     uint256 public startTime;
     uint256 public swapFee;  // Fee in basis points
 
@@ -50,26 +50,35 @@ contract LBP is ReentrancyGuard {
         uint256 tokenAmount,
         uint256 _swapFee,
         address _orchestrator,
-        address _bondingCurve
+        address _bondingCurve,
+        uint256 _startWeightBps,
+        uint256 _decayTimescale,
+        uint256 _liquidationThresholdBps
     ) payable {
         require(_positionToken != address(0), "Invalid token");
         require(_orchestrator != address(0), "Invalid orchestrator");
         require(_bondingCurve != address(0), "Invalid bonding curve");
         require(tokenAmount > 0, "Invalid token amount");
         require(msg.value > 0, "No ETH provided");
+        require(_startWeightBps > 0 && _startWeightBps < 10000, "Invalid start weight");
+        require(_decayTimescale > 0, "Invalid decay timescale");
+        require(_liquidationThresholdBps > 0 && _liquidationThresholdBps <= 10000, "Invalid liq threshold");
 
         POSITION_TOKEN = IERC20(_positionToken);
         ORCHESTRATOR = _orchestrator;
         BONDING_CURVE = _bondingCurve;
-    swapFee = _swapFee;
+        startWeightBps = _startWeightBps;
+        decayTimescale = _decayTimescale;
+        liquidationThresholdBps = _liquidationThresholdBps;
+        swapFee = _swapFee;
         startTime = block.timestamp;
 
-    POSITION_TOKEN.safeTransferFrom(ORCHESTRATOR, address(this), tokenAmount);
+        POSITION_TOKEN.safeTransferFrom(ORCHESTRATOR, address(this), tokenAmount);
         positionTokenAmount = tokenAmount;
         ethAmount = msg.value;
 
-    initialPrice = _calculatePrice(ethAmount, positionTokenAmount, START_WEIGHT, 10000 - START_WEIGHT);
-        liquidationPrice = initialPrice / 10;
+        initialPrice = _calculatePrice(ethAmount, positionTokenAmount, startWeightBps, 10000 - startWeightBps);
+        liquidationPrice = (initialPrice * liquidationThresholdBps) / 10000;
 
         emit LiquidityAdded(tokenAmount, ethAmount);
     }
@@ -82,10 +91,10 @@ contract LBP is ReentrancyGuard {
         // weightToken = START_WEIGHT * T0 / (T0 + elapsed)
         // ensure at least 1 bp to avoid division issues
         if (elapsed == 0) {
-            weightToken = START_WEIGHT;
+            weightToken = startWeightBps;
         } else {
-            uint256 numerator = START_WEIGHT * DECAY_TIMESCALE;
-            uint256 denom = DECAY_TIMESCALE + elapsed;
+            uint256 numerator = startWeightBps * decayTimescale;
+            uint256 denom = decayTimescale + elapsed;
             if (denom == 0) {
                 weightToken = 1;
             } else {

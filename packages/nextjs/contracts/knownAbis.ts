@@ -32,6 +32,21 @@ export const KNOWN_ABIS = {
           type: "address",
           internalType: "address",
         },
+        {
+          name: "_startWeightBps",
+          type: "uint256",
+          internalType: "uint256",
+        },
+        {
+          name: "_decayTimescale",
+          type: "uint256",
+          internalType: "uint256",
+        },
+        {
+          name: "_liquidationThresholdBps",
+          type: "uint256",
+          internalType: "uint256",
+        },
       ],
       stateMutability: "payable",
     },
@@ -48,19 +63,6 @@ export const KNOWN_ABIS = {
           name: "",
           type: "address",
           internalType: "address",
-        },
-      ],
-      stateMutability: "view",
-    },
-    {
-      type: "function",
-      name: "DECAY_TIMESCALE",
-      inputs: [],
-      outputs: [
-        {
-          name: "",
-          type: "uint256",
-          internalType: "uint256",
         },
       ],
       stateMutability: "view",
@@ -93,7 +95,7 @@ export const KNOWN_ABIS = {
     },
     {
       type: "function",
-      name: "START_WEIGHT",
+      name: "decayTimescale",
       inputs: [],
       outputs: [
         {
@@ -280,6 +282,19 @@ export const KNOWN_ABIS = {
     },
     {
       type: "function",
+      name: "liquidationThresholdBps",
+      inputs: [],
+      outputs: [
+        {
+          name: "",
+          type: "uint256",
+          internalType: "uint256",
+        },
+      ],
+      stateMutability: "view",
+    },
+    {
+      type: "function",
       name: "positionTokenAmount",
       inputs: [],
       outputs: [
@@ -330,6 +345,19 @@ export const KNOWN_ABIS = {
     {
       type: "function",
       name: "startTime",
+      inputs: [],
+      outputs: [
+        {
+          name: "",
+          type: "uint256",
+          internalType: "uint256",
+        },
+      ],
+      stateMutability: "view",
+    },
+    {
+      type: "function",
+      name: "startWeightBps",
       inputs: [],
       outputs: [
         {
@@ -1771,19 +1799,6 @@ export const KNOWN_ABIS = {
     },
     {
       type: "function",
-      name: "LIQUIDATION_THRESHOLD",
-      inputs: [],
-      outputs: [
-        {
-          name: "",
-          type: "uint256",
-          internalType: "uint256",
-        },
-      ],
-      stateMutability: "view",
-    },
-    {
-      type: "function",
       name: "MAX_DURATION",
       inputs: [],
       outputs: [
@@ -1896,7 +1911,33 @@ export const KNOWN_ABIS = {
     },
     {
       type: "function",
+      name: "creatorAllocationBps",
+      inputs: [],
+      outputs: [
+        {
+          name: "",
+          type: "uint256",
+          internalType: "uint256",
+        },
+      ],
+      stateMutability: "view",
+    },
+    {
+      type: "function",
       name: "currentRoundId",
+      inputs: [],
+      outputs: [
+        {
+          name: "",
+          type: "uint256",
+          internalType: "uint256",
+        },
+      ],
+      stateMutability: "view",
+    },
+    {
+      type: "function",
+      name: "decayTimescale",
       inputs: [],
       outputs: [
         {
@@ -2004,6 +2045,19 @@ export const KNOWN_ABIS = {
     },
     {
       type: "function",
+      name: "liquidationThresholdBps",
+      inputs: [],
+      outputs: [
+        {
+          name: "",
+          type: "uint256",
+          internalType: "uint256",
+        },
+      ],
+      stateMutability: "view",
+    },
+    {
+      type: "function",
       name: "owner",
       inputs: [],
       outputs: [
@@ -2081,6 +2135,42 @@ export const KNOWN_ABIS = {
     },
     {
       type: "function",
+      name: "setCreatorAllocation",
+      inputs: [
+        {
+          name: "newBps",
+          type: "uint256",
+          internalType: "uint256",
+        },
+      ],
+      outputs: [],
+      stateMutability: "nonpayable",
+    },
+    {
+      type: "function",
+      name: "setPoolConfig",
+      inputs: [
+        {
+          name: "newStartWeightBps",
+          type: "uint256",
+          internalType: "uint256",
+        },
+        {
+          name: "newDecayTimescale",
+          type: "uint256",
+          internalType: "uint256",
+        },
+        {
+          name: "newLiquidationThresholdBps",
+          type: "uint256",
+          internalType: "uint256",
+        },
+      ],
+      outputs: [],
+      stateMutability: "nonpayable",
+    },
+    {
+      type: "function",
       name: "settleRound",
       inputs: [],
       outputs: [],
@@ -2108,6 +2198,32 @@ export const KNOWN_ABIS = {
     },
     {
       type: "function",
+      name: "startRoundEarly",
+      inputs: [
+        {
+          name: "duration",
+          type: "uint256",
+          internalType: "uint256",
+        },
+      ],
+      outputs: [],
+      stateMutability: "nonpayable",
+    },
+    {
+      type: "function",
+      name: "startWeightBps",
+      inputs: [],
+      outputs: [
+        {
+          name: "",
+          type: "uint256",
+          internalType: "uint256",
+        },
+      ],
+      stateMutability: "view",
+    },
+    {
+      type: "function",
       name: "transferOwnership",
       inputs: [
         {
@@ -2118,6 +2234,25 @@ export const KNOWN_ABIS = {
       ],
       outputs: [],
       stateMutability: "nonpayable",
+    },
+    {
+      type: "event",
+      name: "CreatorAllocationUpdated",
+      inputs: [
+        {
+          name: "oldBps",
+          type: "uint256",
+          indexed: false,
+          internalType: "uint256",
+        },
+        {
+          name: "newBps",
+          type: "uint256",
+          indexed: false,
+          internalType: "uint256",
+        },
+      ],
+      anonymous: false,
     },
     {
       type: "event",
@@ -2134,6 +2269,31 @@ export const KNOWN_ABIS = {
           type: "address",
           indexed: true,
           internalType: "address",
+        },
+      ],
+      anonymous: false,
+    },
+    {
+      type: "event",
+      name: "PoolConfigUpdated",
+      inputs: [
+        {
+          name: "startWeightBps",
+          type: "uint256",
+          indexed: false,
+          internalType: "uint256",
+        },
+        {
+          name: "decayTimescale",
+          type: "uint256",
+          indexed: false,
+          internalType: "uint256",
+        },
+        {
+          name: "liquidationThresholdBps",
+          type: "uint256",
+          indexed: false,
+          internalType: "uint256",
         },
       ],
       anonymous: false,

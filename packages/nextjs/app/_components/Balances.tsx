@@ -61,7 +61,7 @@ function BalanceImage({ imageURI, alt }: BalanceImageProps) {
 
 export function Balances() {
   const { address } = useAccount();
-  const { data: balances = [], isLoading, isFetching } = useBalances();
+  const { data: balances = [], isLoading } = useBalances();
 
   const hasBalances = useMemo(() => balances.length > 0, [balances]);
   const showSpinner = address && isLoading;
@@ -71,7 +71,7 @@ export function Balances() {
     <section className="bg-base-100 border border-base-300 rounded-3xl p-6 shadow-md">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-2xl font-semibold">Balances</h3>
-        {isFetching && !isLoading ? <span className="loading loading-spinner loading-sm" /> : null}
+        {isLoading ? <span className="loading loading-spinner loading-sm" /> : null}
       </div>
 
       {showSpinner ? (

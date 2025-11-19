@@ -25,6 +25,9 @@ export const position = onchainTable("position", (t) => ({
   tokenSymbol: t.text(),
   imageURI: t.text().notNull(),
   createdAt: t.bigint().notNull(),
+  initialPrice: t.bigint().notNull(),
+  liquidationPrice: t.bigint().notNull(),
+  isLiquidated: t.boolean().notNull().default(false),
 }));
 
 export const liquidationEvent = onchainTable("liquidation_event", (t) => ({

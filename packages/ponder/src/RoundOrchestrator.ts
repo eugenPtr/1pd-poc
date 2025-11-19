@@ -43,6 +43,20 @@ const LBP_ABI = [
     outputs: [{ name: "", type: "uint256" }],
     stateMutability: "view",
   },
+  {
+    type: "function",
+    name: "initialPrice",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "liquidationPrice",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
 ] as const;
 
 async function safeReadContract<T>(fn: () => Promise<T>): Promise<T | undefined> {
@@ -86,7 +100,7 @@ ponder.on("RoundOrchestrator:PositionCreated", async ({ event, context }) => {
 
   console.log(`Event PositionCreated: roundId=${roundId}, lbp=${lbpAddress}, token=${tokenAddress}`);
 
-  const [tokenName, tokenSymbol, tokenTotalSupply, tokenAmountInPool] = await Promise.all([
+  const [tokenName, tokenSymbol, tokenTotalSupply, tokenAmountInPool, initialPrice, liquidationPrice] = await Promise.all([
     safeReadContract(() =>
       context.client.readContract({
         address: tokenAddress,
@@ -115,9 +129,23 @@ ponder.on("RoundOrchestrator:PositionCreated", async ({ event, context }) => {
         functionName: "positionTokenAmount",
       }) as Promise<bigint>,
     ),
+    safeReadContract(() =>
+      context.client.readContract({
+        address: lbpAddress,
+        abi: LBP_ABI,
+        functionName: "initialPrice",
+      }) as Promise<bigint>,
+    ),
+    safeReadContract(() =>
+      context.client.readContract({
+        address: lbpAddress,
+        abi: LBP_ABI,
+        functionName: "liquidationPrice",
+      }) as Promise<bigint>,
+    ),
   ]);
 
-  console.log(`Token metadata: name=${tokenName}, symbol=${tokenSymbol}, totalSupply=${tokenTotalSupply}, tokenAmountInPool=${tokenAmountInPool}`);
+  console.log(`Token metadata: name=${tokenName}, symbol=${tokenSymbol}, totalSupply=${tokenTotalSupply}, tokenAmountInPool=${tokenAmountInPool}, initialPrice=${initialPrice}, liquidationPrice=${liquidationPrice}`);
 
   await context.db
     .insert(position)
@@ -133,6 +161,9 @@ ponder.on("RoundOrchestrator:PositionCreated", async ({ event, context }) => {
       tokenSymbol: tokenSymbol ?? null,
       imageURI: event.args.imageURI as string,
       createdAt: BigInt(event.block.timestamp),
+      initialPrice: initialPrice ?? 0n,
+      liquidationPrice: liquidationPrice ?? 0n,
+      isLiquidated: false,
     })
     .onConflictDoNothing();
 
@@ -191,4 +222,13 @@ ponder.on("RoundOrchestrator:PositionLiquidated", async ({ event, context }) => 
   });
 
   console.log(`Stored liquidation event for ${lbpAddress}`);
+
+  const existingPosition = await context.db.find(position, { lbp: lbpAddress });
+  if (!existingPosition) {
+    console.warn(`PositionLiquidated received for unknown position ${lbpAddress}; skipping update`);
+    return;
+  }
+
+  await context.db.update(position, { lbp: lbpAddress }).set({ isLiquidated: true });
+  console.log(`Marked position ${lbpAddress} as liquidated`);
 });

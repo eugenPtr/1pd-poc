@@ -7,7 +7,7 @@ import { graphqlRequest } from "~~/services/ponder/graphql";
 import { BondingPoolPriceSeries, PricePoint } from "~~/types/client_types";
 
 const PAGE_LIMIT = 200;
-const REFRESH_INTERVAL_MS = 10000;
+const REFRESH_INTERVAL_MS = parseInt(process.env.NEXT_PUBLIC_UI_REFETCH_INTERVAL ?? "10000", 10);
 
 const BONDING_POOL_PRICE_GQL = /* GraphQL */ `
   query BondingPoolPrices($bondingPool: String!, $after: String, $limit: Int) {

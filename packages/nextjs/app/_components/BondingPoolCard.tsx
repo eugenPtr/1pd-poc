@@ -122,7 +122,7 @@ type BondingPoolCardProps = {
 };
 
 export function BondingPoolCard({ bondingPool }: BondingPoolCardProps) {
-  const { series, latestPrice, isLoading, isFetching } = useBondingPoolPrices(bondingPool ?? undefined);
+  const { series, latestPrice, isLoading } = useBondingPoolPrices(bondingPool ?? undefined);
   const points = series?.points ?? [];
   const chartOptions = useMemo(() => buildChartOptions(points), [points]);
 
@@ -238,7 +238,7 @@ export function BondingPoolCard({ bondingPool }: BondingPoolCardProps) {
           No bonding pool price data yet.
         </div>
       ) : chartOptions ? (
-        <ReactECharts option={chartOptions} notMerge lazyUpdate style={{ height: "240px" }} showLoading={isFetching} />
+        <ReactECharts option={chartOptions} notMerge lazyUpdate style={{ height: "240px" }} showLoading={isLoading} />
       ) : null}
 
       {/* Sell functionality */}

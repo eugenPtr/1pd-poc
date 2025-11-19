@@ -17,7 +17,7 @@ export const DEFAULT_ALCHEMY_API_KEY = "oKxs-03sij-U_N0iOlrSsZFr29-IqbuF";
 const THIRDWEB_CLIENT_ID = process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID;
 
 export const megaethTestnet = defineChain({
-  id: 6342,
+  id: 6343,
   name: "MegaETH Testnet",
   network: "megaeth-testnet",
   nativeCurrency: {
@@ -26,11 +26,11 @@ export const megaethTestnet = defineChain({
     decimals: 18,
   },
   rpcUrls: {
-    default: { http: [`https://6342.rpc.thirdweb.com/${THIRDWEB_CLIENT_ID}`] },
-    public: { http: [`https://6342.rpc.thirdweb.com/${THIRDWEB_CLIENT_ID}`] },
+    default: { http: [`https://6343.rpc.thirdweb.com/${THIRDWEB_CLIENT_ID}`] },
+    public: { http: [`https://6343.rpc.thirdweb.com/${THIRDWEB_CLIENT_ID}`] },
   },
   blockExplorers: {
-    default: { name: "MegaExplorer", url: "https://megaexplorer.xyz" },
+    default: { name: "Megaeth Blockscout", url: "https://megaeth-testnet-v2.blockscout.com" },
   },
   testnet: true,
 });
@@ -38,6 +38,7 @@ export const megaethTestnet = defineChain({
 const scaffoldConfig = {
   // The networks on which your DApp is live
   targetNetworks: [megaethTestnet],
+  // targetNetworks: [megaethTestnet],
   // The interval at which your front-end polls the RPC servers for new data (it has no effect if you only target the local network (default is 4000))
   pollingInterval: 30000,
   // This is ours Alchemy's default API key.

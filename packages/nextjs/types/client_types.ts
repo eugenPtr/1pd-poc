@@ -6,8 +6,13 @@ export type PositionSummary = {
   totalSupply: bigint;
   tokenAmountInPool: bigint;
   ownedSupply: bigint;
+  isLiquidated: boolean;
   percentage: number;
   imageURI: string;
+  initialPrice: bigint;
+  liquidationPrice: bigint;
+  initialMarketCap: number;
+  liquidationMarketCap: number;
 };
 
 export type PricePoint = {

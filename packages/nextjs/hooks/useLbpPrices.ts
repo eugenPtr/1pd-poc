@@ -7,6 +7,7 @@ import { graphqlRequest } from "~~/services/ponder/graphql";
 import { LatestPriceByLbp, PoolStateByLbp, PricePoint, PriceSeries, PricesByLbp } from "~~/types/client_types";
 
 const PAGE_LIMIT = 200;
+const REFETCH_INTERVAL = parseInt(process.env.NEXT_PUBLIC_UI_REFETCH_INTERVAL ?? "10000", 10);
 
 const PRICE_HISTORY_GQL = /* GraphQL */ `
   query PriceHistory($lbps: [String!]!, $after: String, $limit: Int) {
@@ -91,9 +92,9 @@ function convertPriceItems(items: PriceHistoryResponse["prices"]["items"]): Pric
         return false;
       }
 
-      // Validate price value exists
-      if (!item.value || item.value === "0") {
-        console.error(`Skipping price entry ${item.id}: Invalid price value ${item.value}`);
+      // Validate price value exists (allow zero)
+      if (item.value === undefined || item.value === null || item.value === "") {
+        console.error(`Skipping price entry ${item.id}: Missing price value`);
         return false;
       }
 
@@ -200,7 +201,7 @@ export function useLbpPrices(lbps?: readonly `0x${string}`[]) {
   const tailQuery = useQuery({
     queryKey: ["lbpPrices", lbpKey, "tail"],
     enabled: positionsExist && initialQuery.isSuccess,
-    refetchInterval: 10000,
+    refetchInterval: REFETCH_INTERVAL,
     refetchIntervalInBackground: true,
     staleTime: 0,
     queryFn: async () => {
@@ -301,7 +302,7 @@ export function useLbpPrices(lbps?: readonly `0x${string}`[]) {
   const poolStateQuery = useQuery({
     queryKey: ["poolStates", lbpKey],
     enabled: positionsExist,
-    refetchInterval: 10000, // Refresh every 10 seconds
+    refetchInterval: REFETCH_INTERVAL,
     staleTime: 0,
     queryFn: async () => {
       console.log("Fetching pool states for lbps:", sortedLbps);

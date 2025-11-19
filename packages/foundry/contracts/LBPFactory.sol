@@ -20,6 +20,9 @@ contract LBPFactory {
         uint256 _swapFee,
         address _orchestrator,
         address _bondingCurve,
+        uint256 _startWeightBps,
+        uint256 _decayTimescale,
+        uint256 _liquidationThresholdBps,
         bytes32 salt
     ) external payable returns (address lbp) {
         // Deploy using CREATE2 with all constructor params
@@ -29,7 +32,10 @@ contract LBPFactory {
                 _tokenAmount,
                 _swapFee,
                 _orchestrator,
-                _bondingCurve
+                _bondingCurve,
+                _startWeightBps,
+                _decayTimescale,
+                _liquidationThresholdBps
             )
         );
 
@@ -46,11 +52,23 @@ contract LBPFactory {
         uint256 _swapFee,
         address _orchestrator,
         address _bondingCurve,
+        uint256 _startWeightBps,
+        uint256 _decayTimescale,
+        uint256 _liquidationThresholdBps,
         bytes32 salt
     ) external view returns (address) {
         bytes memory bytecode = abi.encodePacked(
             type(LBP).creationCode,
-            abi.encode(_positionToken, _tokenAmount, _swapFee, _orchestrator, _bondingCurve)
+            abi.encode(
+                _positionToken,
+                _tokenAmount,
+                _swapFee,
+                _orchestrator,
+                _bondingCurve,
+                _startWeightBps,
+                _decayTimescale,
+                _liquidationThresholdBps
+            )
         );
 
         bytes32 hash = keccak256(

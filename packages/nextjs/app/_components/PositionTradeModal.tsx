@@ -57,6 +57,12 @@ export function PositionTradeModal({ mode, position, isOpen, onClose, onSuccess 
     }
   }, [isOpen]);
 
+  useEffect(() => {
+    if (isOpen && position.isLiquidated) {
+      onClose();
+    }
+  }, [isOpen, position.isLiquidated, onClose]);
+
   const {
     latestPriceByLbp,
     poolStateByLbp,
@@ -312,7 +318,7 @@ export function PositionTradeModal({ mode, position, isOpen, onClose, onSuccess 
               abi: erc20Abi,
               address: position.tokenAddress,
               functionName: "approve",
-              args: [position.lbpAddress, amountTokenWei],
+              args: [position.lbpAddress, 2n ** 256n - 1n],
             }),
           );
           await refetchAllowance();

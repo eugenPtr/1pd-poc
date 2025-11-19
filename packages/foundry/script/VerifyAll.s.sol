@@ -56,16 +56,40 @@ contract VerifyAll is Script {
             deployedBytecode, compiledBytecode.length, deployedBytecode.length - compiledBytecode.length
         );
 
-        string[] memory inputs = new string[](9);
-        inputs[0] = "forge";
-        inputs[1] = "verify-contract";
-        inputs[2] = vm.toString(contractAddr);
-        inputs[3] = contractName;
-        inputs[4] = "--chain";
-        inputs[5] = vm.toString(block.chainid);
-        inputs[6] = "--constructor-args";
-        inputs[7] = vm.toString(constructorArgs);
-        inputs[8] = "--watch";
+        // Check if this is MegaETH chain (chain ID 6343)
+        bool isMegaEth = block.chainid == 6343;
+
+        string[] memory inputs;
+
+        if (isMegaEth) {
+            // Use Blockscout verifier for MegaETH
+            inputs = new string[](13);
+            inputs[0] = "forge";
+            inputs[1] = "verify-contract";
+            inputs[2] = vm.toString(contractAddr);
+            inputs[3] = contractName;
+            inputs[4] = "--rpc-url";
+            inputs[5] = "https://timothy.megaeth.com/rpc";
+            inputs[6] = "--verifier";
+            inputs[7] = "blockscout";
+            inputs[8] = "--verifier-url";
+            inputs[9] = "https://megaeth-testnet-v2.blockscout.com/api/";
+            inputs[10] = "--constructor-args";
+            inputs[11] = vm.toString(constructorArgs);
+            inputs[12] = "--watch";
+        } else {
+            // Use default Etherscan verifier for other chains
+            inputs = new string[](9);
+            inputs[0] = "forge";
+            inputs[1] = "verify-contract";
+            inputs[2] = vm.toString(contractAddr);
+            inputs[3] = contractName;
+            inputs[4] = "--chain";
+            inputs[5] = vm.toString(block.chainid);
+            inputs[6] = "--constructor-args";
+            inputs[7] = vm.toString(constructorArgs);
+            inputs[8] = "--watch";
+        }
 
         FfiResult memory f = tempVm(address(vm)).tryFfi(inputs);
 

@@ -23,18 +23,15 @@ interface PriceChartProps {
 }
 
 export function PriceChart({ roundId }: PriceChartProps) {
-  const {
-    data: positionsMap,
-    isLoading: isPositionsLoading,
-    isFetching: isPositionsFetching,
-  } = useRoundPositions(roundId);
+  const { data: positionsMap, isLoading: isPositionsLoading } = useRoundPositions(roundId);
 
   const positions = useMemo(() => {
     if (!positionsMap) return [];
     return Array.from(positionsMap.values());
   }, [positionsMap]);
 
-  const lbpAddresses = useMemo(() => positions.map(position => position.lbpAddress), [positions]);
+  const activePositions = useMemo(() => positions.filter(position => !position.isLiquidated), [positions]);
+  const lbpAddresses = useMemo(() => activePositions.map(position => position.lbpAddress), [activePositions]);
   const metadataByLbp = useMemo(() => {
     const normalizeImageUrl = (imageURI: string) => {
       if (!imageURI) return FALLBACK_IMAGE_URL;
@@ -43,7 +40,7 @@ export function PriceChart({ roundId }: PriceChartProps) {
         : imageURI;
     };
 
-    return positions.reduce<Record<`0x${string}`, { name: string; symbol: string; imageUrl: string }>>(
+    return activePositions.reduce<Record<`0x${string}`, { name: string; symbol: string; imageUrl: string }>>(
       (acc, position) => {
         acc[position.lbpAddress] = {
           name: position.name,
@@ -54,26 +51,32 @@ export function PriceChart({ roundId }: PriceChartProps) {
       },
       {},
     );
-  }, [positions]);
+  }, [activePositions]);
 
-  const { series, isLoading: isPricesLoading, isFetching: isPricesFetching } = useLbpPrices(lbpAddresses);
+  const { series: priceSeries, isLoading: isPricesLoading } = useLbpPrices(lbpAddresses);
 
-  const isLoading = (isPositionsLoading || isPricesLoading) && series.length === 0;
-  const isRefreshing = isPositionsFetching || isPricesFetching;
-  const isEmpty = !isLoading && series.every(s => s.points.length === 0);
+  const filteredSeries = useMemo(() => {
+    if (!priceSeries || priceSeries.length === 0) return [];
+    if (!lbpAddresses || lbpAddresses.length === 0) return [];
+    const activeSet = new Set(lbpAddresses.map(addr => addr.toLowerCase()));
+    return priceSeries.filter(line => activeSet.has(line.lbpAddress.toLowerCase()));
+  }, [priceSeries, lbpAddresses]);
+
+  const isLoading = (isPositionsLoading || isPricesLoading) && filteredSeries.length === 0;
+  const isEmpty = !isLoading && filteredSeries.every(s => s.points.length === 0);
 
   const option = useMemo(() => {
-    if (series.length === 0 || isEmpty) {
+    if (filteredSeries.length === 0 || isEmpty) {
       return null;
     }
 
     const allTimestamps = new Set<number>();
-    series.forEach(line => {
+    filteredSeries.forEach(line => {
       line.points.forEach(point => allTimestamps.add(point.timestamp));
     });
     const sortedTimestamps = [...allTimestamps].sort((a, b) => a - b);
 
-    const seriesData = series.map((line, index) => {
+    const seriesData = filteredSeries.map((line, index) => {
       const metadata = metadataByLbp[line.lbpAddress];
       const name = metadata ? metadata.symbol || metadata.name : line.lbpAddress.slice(0, 8);
 
@@ -211,7 +214,7 @@ export function PriceChart({ roundId }: PriceChartProps) {
       },
       series: seriesData,
     };
-  }, [series, isEmpty, metadataByLbp]);
+  }, [filteredSeries, isEmpty, metadataByLbp]);
 
   return (
     <section className="bg-base-100 border border-base-300 rounded-3xl p-6 shadow-md">
@@ -220,7 +223,6 @@ export function PriceChart({ roundId }: PriceChartProps) {
           <h3 className="text-2xl font-semibold">Price Overview</h3>
           <p className="text-sm text-base-content/70">Position tokens prices</p>
         </div>
-        {isRefreshing && !isLoading ? <span className="loading loading-spinner loading-sm" /> : null}
       </div>
 
       {isLoading ? (

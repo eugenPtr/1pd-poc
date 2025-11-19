@@ -2,10 +2,12 @@
 
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { formatUnits } from "viem";
 import { graphqlRequest } from "~~/services/ponder/graphql";
 import { PositionSummary } from "~~/types/client_types";
 
 const ZERO_ADDRESS = `0x${"0".repeat(40)}` as `0x${string}`;
+const REFETCH_INTERVAL = parseInt(process.env.NEXT_PUBLIC_UI_REFETCH_INTERVAL ?? "10000", 10);
 
 type PositionItem = {
   lbp: `0x${string}`;
@@ -15,6 +17,9 @@ type PositionItem = {
   tokenTotalSupply?: string | null;
   tokenAmountInPool?: string | null;
   imageURI?: string | null;
+  initialPrice?: string | null;
+  liquidationPrice?: string | null;
+  isLiquidated?: boolean | null;
 };
 
 type RoundPositionsResponse = {
@@ -34,20 +39,31 @@ const ROUND_POSITIONS_GQL = /* GraphQL */ `
         tokenTotalSupply
         tokenAmountInPool
         imageURI
+        initialPrice
+        liquidationPrice
+        isLiquidated
       }
     }
   }
 `;
 
 function withPercentages(positions: PositionSummary[]): PositionSummary[] {
-  const totalOwned = positions.reduce((sum, position) => sum + position.ownedSupply, 0n);
-  if (totalOwned === 0n) {
+  const activeOwnedSupply = positions.reduce((sum, position) => {
+    if (position.isLiquidated) return sum;
+    return sum + position.ownedSupply;
+  }, 0n);
+
+  if (activeOwnedSupply === 0n) {
     return positions.map(position => ({ ...position, percentage: 0 }));
   }
 
   return positions.map(position => {
+    if (position.isLiquidated) {
+      return { ...position, percentage: 0 };
+    }
+
     const scaled = position.ownedSupply * 10000n;
-    const percentage = Number(scaled / totalOwned) / 100;
+    const percentage = Number(scaled / activeOwnedSupply) / 100;
     return { ...position, percentage };
   });
 }
@@ -74,6 +90,19 @@ export function useRoundPositions(roundId?: string | null) {
         const imageURI = item.imageURI ?? "";
         const tokenAddress = item.tokenAddress ?? ZERO_ADDRESS;
 
+        // Parse prices from string to bigint
+        const initialPrice = item.initialPrice ? BigInt(item.initialPrice) : 0n;
+        const liquidationPrice = item.liquidationPrice ? BigInt(item.liquidationPrice) : 0n;
+        const isLiquidated = Boolean(item.isLiquidated);
+
+        // Calculate market caps: totalSupply × price (in ETH)
+        const totalSupplyInEth = Number(formatUnits(totalSupply, 18));
+        const initialPriceInEth = Number(formatUnits(initialPrice, 18));
+        const liquidationPriceInEth = Number(formatUnits(liquidationPrice, 18));
+
+        const initialMarketCap = totalSupplyInEth * initialPriceInEth;
+        const liquidationMarketCap = totalSupplyInEth * liquidationPriceInEth;
+
         return {
           lbpAddress: item.lbp,
           tokenAddress,
@@ -82,14 +111,19 @@ export function useRoundPositions(roundId?: string | null) {
           totalSupply,
           tokenAmountInPool: amountInPool,
           ownedSupply,
+          isLiquidated,
           percentage: 0,
           imageURI,
+          initialPrice,
+          liquidationPrice,
+          initialMarketCap,
+          liquidationMarketCap,
         };
       });
 
       return withPercentages(base);
     },
-    refetchInterval: 10000,
+    refetchInterval: REFETCH_INTERVAL,
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
   });

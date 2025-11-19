@@ -17,7 +17,6 @@ contract RoundOrchestrator is Ownable, ReentrancyGuard {
     uint256 public constant MAX_POSITION_ETH = 100 ether;
     uint256 public constant MIN_DURATION = 10 minutes;
     uint256 public constant MAX_DURATION = 1 days;
-    uint256 public constant LIQUIDATION_THRESHOLD = 9000; // 90% price drop
     uint256 public constant SWAP_FEE_PERCENTAGE = 5e15; // 0.5% in 1e18 format
 
     // Factory contract addresses for CREATE2 deployments
@@ -44,6 +43,9 @@ contract RoundOrchestrator is Ownable, ReentrancyGuard {
     // State variables
     uint256 public currentRoundId;
     uint256 public creatorAllocationBps; // Basis points: 1000 = 10%
+    uint256 public startWeightBps; // Defaults to 90.91%
+    uint256 public decayTimescale; // Defaults to 400
+    uint256 public liquidationThresholdBps; // Defaults to 30%
 
     mapping(uint256 => Round) public roundIdToRound;
     mapping(address => Position) public lbpAddressToPosition;
@@ -64,6 +66,7 @@ contract RoundOrchestrator is Ownable, ReentrancyGuard {
     event PositionLiquidated(address indexed lbpAddress);
     event RoundSettled(uint256 indexed roundId, address indexed winnerLbp);
     event CreatorAllocationUpdated(uint256 oldBps, uint256 newBps);
+    event PoolConfigUpdated(uint256 startWeightBps, uint256 decayTimescale, uint256 liquidationThresholdBps);
 
     constructor(
         address initialOwner,
@@ -78,61 +81,66 @@ contract RoundOrchestrator is Ownable, ReentrancyGuard {
         lbpFactory = LBPFactory(_lbpFactory);
         positionTokenFactory = PositionTokenFactory(_positionTokenFactory);
         creatorAllocationBps = 1000; // 10% initial allocation
+        startWeightBps = 9091;
+        decayTimescale = 400;
+        liquidationThresholdBps = 3000;
 
-        currentRoundId = 1;
-    Round storage firstRound = roundIdToRound[1];
-        firstRound.startTime = block.timestamp;
-        firstRound.duration = firstRoundDuration;
-        firstRound.endTime = block.timestamp + firstRoundDuration;
-
-        firstRound.bondingCurve = new LinearBondingCurve(
-            "Bonding Curve Token",
-            "BCT",
-            1e15,
-            1e12,
-            address(this)
-        );
-
-    emit RoundStarted(1, firstRound.startTime, firstRoundDuration, address(firstRound.bondingCurve));
+        currentRoundId = 0;
+        _startRoundInternal(firstRoundDuration);
     }
     
-    function startRound(uint256 duration) external {
-        require(duration >= MIN_DURATION && duration <= MAX_DURATION, "Invalid duration");
+    function startRound(uint256 duration) external nonReentrant {
+        _validateDuration(duration);
 
-    Round storage currentRound = roundIdToRound[currentRoundId];
+        Round storage currentRound = roundIdToRound[currentRoundId];
         require(block.timestamp >= currentRound.endTime, "Current round not finished");
 
         if (!currentRound.settled) {
-            settleRound();
+            _settleRound(currentRound);
         }
 
-        currentRoundId++;
+        _startRoundInternal(duration);
+    }
 
-    Round storage newRound = roundIdToRound[currentRoundId];
-        newRound.startTime = block.timestamp;
-        newRound.duration = duration;
-        newRound.endTime = block.timestamp + duration;
+    function startRoundEarly(uint256 duration) external nonReentrant {
+        _validateDuration(duration);
 
-        newRound.bondingCurve = new LinearBondingCurve(
-            "Bonding Curve Token",
-            "BCT",
-            1e15,
-            1e12,
-            address(this)
-        );
+        Round storage currentRound = roundIdToRound[currentRoundId];
+        if (!currentRound.settled) {
+            _settleRound(currentRound);
+        }
 
-    emit RoundStarted(currentRoundId, newRound.startTime, duration, address(newRound.bondingCurve));
+        _startRoundInternal(duration);
     }
 
     /**
      * @dev Set the creator allocation percentage
      * @param newBps New allocation in basis points (1000 = 10%)
      */
-    function setCreatorAllocation(uint256 newBps) external onlyOwner {
+    function setCreatorAllocation(uint256 newBps) external {
         require(newBps <= 5000, "Allocation cannot exceed 50%");
         uint256 oldBps = creatorAllocationBps;
         creatorAllocationBps = newBps;
         emit CreatorAllocationUpdated(oldBps, newBps);
+    }
+
+    function setPoolConfig(
+        uint256 newStartWeightBps,
+        uint256 newDecayTimescale,
+        uint256 newLiquidationThresholdBps
+    ) external {
+        require(newStartWeightBps > 0 && newStartWeightBps < PERCENTAGE_BASE, "Invalid start weight");
+        require(newDecayTimescale > 0, "Invalid decay");
+        require(
+            newLiquidationThresholdBps > 0 && newLiquidationThresholdBps <= PERCENTAGE_BASE,
+            "Invalid liq threshold"
+        );
+
+        startWeightBps = newStartWeightBps;
+        decayTimescale = newDecayTimescale;
+        liquidationThresholdBps = newLiquidationThresholdBps;
+
+        emit PoolConfigUpdated(newStartWeightBps, newDecayTimescale, newLiquidationThresholdBps);
     }
 
     /**
@@ -156,7 +164,7 @@ contract RoundOrchestrator is Ownable, ReentrancyGuard {
         require(poolTokens > 0, "Pool tokens must be positive");
 
         // Generate salt for CREATE2
-    bytes32 salt = keccak256(abi.encodePacked(currentRoundId, roundIdToRound[currentRoundId].lbps.length + 1));
+        bytes32 salt = keccak256(abi.encodePacked(currentRoundId, roundIdToRound[currentRoundId].lbps.length + 1));
 
         // Deploy position token using factory (full supply)
         address positionToken = positionTokenFactory.deploy(
@@ -175,6 +183,9 @@ contract RoundOrchestrator is Ownable, ReentrancyGuard {
             SWAP_FEE_PERCENTAGE / 1e13,
             address(this),
             address(round.bondingCurve),
+            startWeightBps,
+            decayTimescale,
+            liquidationThresholdBps,
             salt
         );
 
@@ -188,6 +199,9 @@ contract RoundOrchestrator is Ownable, ReentrancyGuard {
             SWAP_FEE_PERCENTAGE / 1e13,
             address(this),
             address(round.bondingCurve),
+            startWeightBps,
+            decayTimescale,
+            liquidationThresholdBps,
             salt
         );
 
@@ -243,15 +257,15 @@ contract RoundOrchestrator is Ownable, ReentrancyGuard {
         emit PositionLiquidated(lbpAddr);
     }
     
-    function settleRoundEarly() external onlyOwner nonReentrant {
-    Round storage round = roundIdToRound[currentRoundId];
+    function settleRoundEarly() public nonReentrant {
+        Round storage round = roundIdToRound[currentRoundId];
         require(!round.settled, "Round already settled");
 
         _settleRound(round);
     }
 
     function settleRound() public nonReentrant {
-    Round storage round = roundIdToRound[currentRoundId];
+        Round storage round = roundIdToRound[currentRoundId];
         require(block.timestamp >= round.endTime, "Round not ended yet");
         require(!round.settled, "Round already settled");
 
@@ -289,22 +303,44 @@ contract RoundOrchestrator is Ownable, ReentrancyGuard {
             }
         }
 
-    round.settled = true;
+        round.settled = true;
 
         emit RoundSettled(currentRoundId, winnerLbp);
     }
 
     function getRoundPositions() external view returns (address[] memory) {
-    return roundIdToRound[currentRoundId].lbps;
+        return roundIdToRound[currentRoundId].lbps;
     }
 
     /**
      * @dev Returns the bonding pool (bonding curve) address for the current round
      */
     function getCurrentBondingPool() external view returns (address) {
-    return address(roundIdToRound[currentRoundId].bondingCurve);
+        return address(roundIdToRound[currentRoundId].bondingCurve);
     }
 
+    function _startRoundInternal(uint256 duration) internal {
+        currentRoundId++;
+
+        Round storage newRound = roundIdToRound[currentRoundId];
+        newRound.startTime = block.timestamp;
+        newRound.duration = duration;
+        newRound.endTime = block.timestamp + duration;
+
+        newRound.bondingCurve = new LinearBondingCurve(
+            "Bonding Curve Token",
+            "BCT",
+            1e13,
+            1e10,
+            address(this)
+        );
+
+        emit RoundStarted(currentRoundId, newRound.startTime, duration, address(newRound.bondingCurve));
+    }
+
+    function _validateDuration(uint256 duration) internal pure {
+        require(duration >= MIN_DURATION && duration <= MAX_DURATION, "Invalid duration");
+    }
 
     receive() external payable {}
 }
