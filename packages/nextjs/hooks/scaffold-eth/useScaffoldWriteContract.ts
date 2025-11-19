@@ -84,7 +84,7 @@ export function useScaffoldWriteContract<TContractName extends ContractName>(
     chainId: selectedNetwork.id as AllowedChainIds,
   });
 
-  const DEFAULT_GAS_LIMIT = 100_000_000n;
+  const DEFAULT_GAS_LIMIT = 300_000_000n;
 
   const sendContractWriteAsyncTx = async <
     TFunctionName extends ExtractAbiFunctionNames<ContractAbi<TContractName>, "nonpayable" | "payable">,
